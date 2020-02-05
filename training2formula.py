@@ -153,11 +153,13 @@ class Train2Form:
         time = [float(t) for t in time]
         df_data = self.data(files, dic, time) 
         w = 5/100 # TODO: What is this value and should we allow this to be set via the command line
+        #T_response: Yes, it can be set for now via the command line. Eventually  it can be another .csv file since
+        # we may want to specify different tolerances for different observables (and perhps even time points)
         tol = self.tolerance(df_data, w)    
         formulas, formulas_Obs = self.trainingdata2formulas(df_data, tol)
         #TODO: What do we want to save here? If this is a command line program it 
         # probably should save some result somewhere
-
+        #T_response: Not necessary. A later script will use these lists.
 
 if __name__ == '__main__':
     T2F = Train2Form()
