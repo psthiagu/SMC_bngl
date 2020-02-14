@@ -8,14 +8,24 @@ Created on Sun Apr 14 19:18:59 2019
 from os import path
 import pandas as pd
 import matplotlib.pyplot as plt
-import argparse, glob, os, sys
+import argparse, glob, os, sys, pickle
 
 
 class Train2Form:
-    def __init__(self):
-        # runs argument parsing and sets
-        # self.parser and self.args
+    def __init__(self, fpath=None, w=0.05):
+        '''
+        Fpath and w are required arguments
+        '''
+        self.fpath = fpath
+        self.w = w
         self._parse_args()
+        self.cmdline = False
+        # We assume if fpath is not given, we are running 
+        # off of cmdline 
+        if fpath == None:
+            self.cmdline = True
+            self.fpath = self.args.file_path
+            self.w = self.args.tolerance
 
     def _parse_args(self):
         '''
@@ -24,6 +34,10 @@ class Train2Form:
         parser = argparse.ArgumentParser(description='Gets the training data?')
         parser.add_argument('-fp', '--fpath', dest='file_path', type=str, default=os.getcwd(),
                             help='Sets the file path to get the data files from')
+        parser.add_argument('-w', '--tol', dest='tolerance', type=float, default=0.05,
+                            help='Sets the tolerance')
+        parser.add_argument('-o', '--output', dest='outfile', type=str, default='t2f_out.pickle',
+                            help='Output file path')
        
         self.parser = parser
         self.args = self.parser.parse_args()
@@ -33,9 +47,9 @@ class Train2Form:
         Finds all the csv files in the given file path and returns the full 
         paths to each data file
         ''' 
-        assert (self.args.file_path is not None) or self.args.file_path != "", \
-                "No file path given which is required: {}".format(self.args.file_path)
-        return glob.glob(self.args.file_path + "/*{}".format(fmt)) 
+        assert (self.fpath is not None) or self.fpath != "", \
+                "No file path given which is required: {}".format(self.fpath)
+        return glob.glob(self.fpath + "/*{}".format(fmt)) 
         
     def all_times(self, N):
         """
@@ -144,15 +158,19 @@ class Train2Form:
                     # the same information is coded above but this time for each observable.
         return formulas, formulas_Obs
 
+    def save_res(self, to_save):
+        with open(self.args.outfile, 'wb') as f:
+            pickle.dump(to_save, f)
+
     def run(self):
         # first we get the file paths from the file_path 
         # given by the user
         files = self.get_files() 
-        # TODO: Comment out every line here to explain general program flow
+        # TODO: Comment every line here to explain general program flow
         time , dic = self.all_times(files)
         time = [float(t) for t in time]
         df_data = self.data(files, dic, time) 
-        w = 5/100 # TODO: What is this value and should we allow this to be set via the command line
+        w = self.w # TODO: What is this value and should we allow this to be set via the command line
         #T_response: Yes, it can be set for now via the command line. Eventually  it can be another .csv file since
         # we may want to specify different tolerances for different observables (and perhps even time points)
         tol = self.tolerance(df_data, w)    
@@ -160,6 +178,9 @@ class Train2Form:
         #TODO: What do we want to save here? If this is a command line program it 
         # probably should save some result somewhere
         #T_response: Not necessary. A later script will use these lists.
+        if self.cmdline:
+            self.save_res((formulas, formulas_Obs))
+        return formulas, formulas_Obs
 
 if __name__ == '__main__':
     T2F = Train2Form()
