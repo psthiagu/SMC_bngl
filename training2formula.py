@@ -12,20 +12,19 @@ import argparse, glob, os, sys, pickle
 
 
 class Train2Form:
-    def __init__(self, fpath=None, w=0.05):
+    def __init__(self, fpath=None, w=0.05, cmdline=False, outfile="t2f_out.pickle"):
         '''
         Fpath and w are required arguments
         '''
-        self.fpath = fpath
-        self.w = w
-        self._parse_args()
-        self.cmdline = False
-        # We assume if fpath is not given, we are running 
-        # off of cmdline 
-        if fpath == None:
-            self.cmdline = True
+        if cmdline: 
+            self._parse_args()
             self.fpath = self.args.file_path
             self.w = self.args.tolerance
+            self.outfile = self.args.outfile
+        else:
+            self.fpath = fpath
+            self.w = w
+            self.outfile = outfile
 
     def _parse_args(self):
         '''
@@ -178,10 +177,9 @@ class Train2Form:
         #TODO: What do we want to save here? If this is a command line program it 
         # probably should save some result somewhere
         #T_response: Not necessary. A later script will use these lists.
-        if self.cmdline:
-            self.save_res((formulas, formulas_Obs))
         return formulas, formulas_Obs
 
 if __name__ == '__main__':
-    T2F = Train2Form()
-    T2F.run()
+    T2F = Train2Form(cmdline=True)
+    f, fObs = T2F.run()
+    T2F.save_res((f, fObs))
