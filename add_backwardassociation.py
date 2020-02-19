@@ -187,10 +187,6 @@ def backward_associations(xml_file, bngl_file):
                 name2conc[n] = s.getInitialConcentration()
         return (name2index,name2conc)
 
-
-    
-
-
 if __name__ == '__main__':
     
     xml_file = "comp31_sbml.xml"
