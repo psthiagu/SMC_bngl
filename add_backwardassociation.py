@@ -9,7 +9,9 @@ from os import path
 import pandas as pd
 import matplotlib.pyplot as plt
 import argparse, glob, os, sys, pickle
+from libsbml import *
 
+"""
 
 class Train2Form:
     def __init__(self, fpath=None, w=0.05):
@@ -52,16 +54,7 @@ class Train2Form:
         return glob.glob(self.fpath + "/*{}".format(fmt)) 
         
     def all_times(self, N):
-        """
-        The all_time function computes all the time points at which data is available.
-        The input N is a list of the names .csv files. Here these csv files are assumed to be in the current folder 
-        from which the function is being called. Further the time scale is assumed to be common and named ('hour', 'day' etc) 
-        in the same way in all the csv files. In the particular data sets I am using here the time scale is 'hour'. Perhaps this 
-        should be changed to a neutral name like 'time'.
         
-        The output is a a list T of time points and dic, a dictionary that contains the csv files converted to dataframes , the name 
-        of the associated observable. mildly processed (drop the index column) to prepare them for further processing.
-        """
         dic = {}
         T = []
         for ifile, fpath in enumerate(N):
@@ -82,14 +75,7 @@ class Train2Form:
         return(T, dic)
 
     def data(self, N, dic, T):
-        """
-        Next we assemble the data into a single dataframe. In this dataframe there will be one column 'time' containing all the 
-        time points for which data is available. In addition there will be one column corresponding to the observable mentioned 
-        in each of the individula data files. In the current example for instance, the B4.csv file's observable is 'Tc4_B'. 
-        Then for each time point t in the list T. In the column corresponding to the observable, say, 'Tc4_B', we insert the kth entry to be 
-        'd' if 'd' has been obseved to be the value of this observable at time T[k]. If there is no data at this time point for the observable, the entry 
-        is fixed to be '_1.0' which will be treated as "no data" later.
-        """
+        
         # df_data is the unified training dat file we want to assemble.
         df_data = pd.DataFrame()
         df_data['time'] = T
@@ -111,18 +97,7 @@ class Train2Form:
         return(df_data)
 
     def tolerance(self, df_data, w):
-        """
-        We next convert the training data to a set of BLTL (Bounded Linear Time Logic) formulas.
-        Since we are converting just time course data we just need future formulas of the form F^{t} (x \in I).
-        This formula says that the value of the variable x was observed to fall in the interval I at time t.
-        
-        Here I is an interval around the reported value v. It will be of the form [v-\delta, v+\delta] where \delata is a 
-        user supplied tolerance value. It is usually specified as a percentage of the reported data value. Thus with tolerance chosen 
-        as 5%, I will be set to [v*19/20, v*21/20].
-        
-        We begin with a specification of such intervals, It will be easy to expnad this specification should the need arise.
-        
-        """
+       
         # extract the set of observables
         Obs = df_data.columns.tolist()[1:]
         #define the tolerance for each observable using the parameter w. In general this could be a dictionary.
@@ -132,16 +107,7 @@ class Train2Form:
         return tol
 
     def trainingdata2formulas(self, df_data, tol):
-        """
-        In the future I want to be able to add other kinds of properties for model checking and parameter estimation.
-        
-        Hence I want to represent the current training data in a more elaborate fashion. 
-        
-        First we unpack the training data to generate the observables and their relevant time points. This may seem silly because this is the information 
-        contained in the individual data files. But I don't want to make any assumptions about how the training data was prepared other than the 
-        convetions assumed in df_data 
-        
-        """
+       
         Obs = df_data.columns.tolist()[1:]
         # We convert all the data points into formulas. For convenience we also encode this 
         # information as a dictionary in which each observable has a set of formulas assigned to it.
@@ -157,11 +123,14 @@ class Train2Form:
                     formulas_Obs[x].append(('F_eq', d[0], d[x], tol[x]))
                     # the same information is coded above but this time for each observable.
         return formulas, formulas_Obs
-
+    
     def save_res(self, to_save):
         with open(self.args.outfile, 'wb') as f:
             pickle.dump(to_save, f)
-
+    
+    
+   
+    
     def run(self):
         # first we get the file paths from the file_path 
         # given by the user
@@ -182,6 +151,49 @@ class Train2Form:
             self.save_res((formulas, formulas_Obs))
         return formulas, formulas_Obs
 
+"""
+
+def extract_basic_species_names(bngl_file):
+    with open (bngl_file, 'rt') as myfile:
+        L = []
+        for myline in myfile:
+            L.append(myline)
+    borders = [i for i in range(len(L)) if 'species' in L[i]]
+    L_species = L[borders[0]+1: borders[1]]
+    L_species = [tuple(l.split()) for l in L_species]
+    N =  [L_species[i][0] for i in range(len(L_species)) if len(L_species[i]) > 0] 
+    set_N = []
+    for n in N:
+        n = n.replace("(", ",")
+        n = n.replace(")", "")
+        X = set(n.split(","))
+        set_N.append(X)
+    return(set_N)
+    
+def backward_associations(xml_file, bngl_file):
+        doc = readSBMLFromFile("comp31_sbml.xml")
+        model = doc.getModel()
+        S = model.species
+        set_N = extract_basic_species_names(bngl_file)
+        name2index = {}
+        name2conc = {}
+        for s in S:
+            n = s.getName()
+            m = n.replace("(", ",")
+            m = m.replace(")", "")
+            N = set(m.split(","))
+            if N in set_N:
+                name2index[n] = s.getId()
+                name2conc[n] = s.getInitialConcentration()
+        return (name2index,name2conc)
+
+
+    
+
+
 if __name__ == '__main__':
-    T2F = Train2Form()
-    T2F.run()
+    
+    xml_file = "comp31_sbml.xml"
+    bngl_file = "comp31.bngl"
+    #model = backward_associations(xml_file, sp, parm)
+    name2index, name2conc = backward_associations(xml_file, bngl_file)
