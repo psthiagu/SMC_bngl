@@ -51,15 +51,37 @@ class Train2Form:
         return glob.glob(self.fpath + "/*{}".format(fmt)) 
         
     def all_times(self, N):
-        """
-        The all_time function computes all the time points at which data is available.
-        The input N is a list of the names .csv files. Here these csv files are assumed to be in the current folder 
-        from which the function is being called. Further the time scale is assumed to be common and named ('hour', 'day' etc) 
-        in the same way in all the csv files. In the particular data sets I am using here the time scale is 'hour'. Perhaps this 
-        should be changed to a neutral name like 'time'.
+        """Computes all the time points at which data is available and converts the data files to dataframes.
         
-        The output is a a list T of time points and dic, a dictionary that contains the csv files converted to dataframes , the name 
-        of the associated observable. mildly processed (drop the index column) to prepare them for further processing.
+        
+        The input N is a list of the names .csv files. Further the time scale is assumed to be common and named ('day') here though 'hour' 
+        will be more appropriate. In fact 'time' will be a more appropriate neutral name.
+        
+        Parameters
+        ----------
+        N : list 
+        
+        A list of file names
+        
+        Returns
+        -------
+        T : list
+        
+        A sorted (ascending) list of time points at which experimental observations are available.
+        
+        dic : dictionary
+        
+        Gives for each file name an ordered pair; a dataframe representation of the data in the file and the 
+        observable associated with the data.
+        
+        Raises
+        ------
+        
+        I think it will be a good idea to ensure that all the dataframes have a common name for time.
+        Also it might be worth checking that the names of the observables assembled from the data files match the names of 
+        the observables in the bngl file (and hence in the list parameters in the sbml file). I ran into this problem much later and had to go back 
+        to the data files to fix it.
+        
         """
         dic = {}
         T = []
@@ -81,13 +103,37 @@ class Train2Form:
         return(T, dic)
 
     def data(self, N, dic, T):
-        """
-        Next we assemble the data into a single dataframe. In this dataframe there will be one column 'time' containing all the 
-        time points for which data is available. In addition there will be one column corresponding to the observable mentioned 
-        in each of the individula data files. In the current example for instance, the B4.csv file's observable is 'Tc4_B'. 
-        Then for each time point t in the list T. In the column corresponding to the observable, say, 'Tc4_B', we insert the kth entry to be 
-        'd' if 'd' has been obseved to be the value of this observable at time T[k]. If there is no data at this time point for the observable, the entry 
-        is fixed to be '_1.0' which will be treated as "no data" later.
+        """Next we assemble the data into a single dataframe. 
+        
+        In this dataframe there will be one column 'time' containing all the 
+        time points for which data is available. In addition there will be 
+        one column corresponding to the observable mentioned 
+        in each of the individula data files. If for a 'time' value no data is available for an observable 
+        then we insert the default value '-1' for this 'time' value. As a result for each 'time' point each 
+        observable will have a data value.
+        
+        Parameters
+        ----------
+        
+        N: list
+        
+        As above.
+        
+        dic: dictionary
+        
+        As above
+        
+        T: list
+        
+        As above
+        
+        Returns
+        -------
+        
+        df_data : dataframe
+        
+        The datfrme that contains all the data with a common time frame.
+        
         """
         # df_data is the unified training dat file we want to assemble.
         df_data = pd.DataFrame()
@@ -110,16 +156,32 @@ class Train2Form:
         return(df_data)
 
     def tolerance(self, df_data, w):
-        """
-        We next convert the training data to a set of BLTL (Bounded Linear Time Logic) formulas.
-        Since we are converting just time course data we just need future formulas of the form F^{t} (x \in I).
-        This formula says that the value of the variable x was observed to fall in the interval I at time t.
+        """The tolerance values to model noisy data.
+        Each data point, when being compared to the value reported by a simulation, should be done with some tolerance.
+        If the data point's value is v and its tolerance is \delta then we check if the reported value falls in
+        the interval [v-\delta, v+\delta].
         
-        Here I is an interval around the reported value v. It will be of the form [v-\delta, v+\delta] where \delata is a 
-        user supplied tolerance value. It is usually specified as a percentage of the reported data value. Thus with tolerance chosen 
-        as 5%, I will be set to [v*19/20, v*21/20].
+        To start with, we are assuming the tolerance for all the observables and all their data values are the same.
+        Here we also assume that it is specified as a (small) percentage. Thus if w = 5% then the interval associated with v 
+        is [v*19/20, v*21/20]
         
-        We begin with a specification of such intervals, It will be easy to expnad this specification should the need arise.
+        Parameters
+        ----------
+        
+        df_data : dataframe
+        
+        The assembled data; see above
+        
+        w : float
+        
+        The tolerance. Interpreted as a percentage. 
+        
+        Returns
+        -------
+        tol : dictionary
+        
+        Specifies for each observable its tolerance as a percentage.
+
         
         """
         # extract the set of observables
@@ -131,19 +193,37 @@ class Train2Form:
         return tol
 
     def trainingdata2formulas(self, df_data, tol):
-        """
-        In the future I want to be able to add other kinds of properties for model checking and parameter estimation.
+        """Converts the assembled data into BLTL formulas.
         
-        Hence I want to represent the current training data in a more elaborate fashion. 
+        If the observable x has the value v at time point t then this will be converted to the future 
+        formula F^t(x \in [v-\delta, v+\delta]).
         
-        First we unpack the training data to generate the observables and their relevant time points. This may seem silly because this is the information 
-        contained in the individual data files. But I don't want to make any assumptions about how the training data was prepared other than the 
-        convetions assumed in df_data 
+        Parameters
+        ----------
+        
+        df_data : dataframe
+        
+        As above.
+        
+        tol: dictionary
+        
+        As above.
+        
+        Returns
+        -------
+        formulas : list
+        
+        A list of tuples of the form (F_eq, t, x, v, w). Such a tuple asserts that at exactly time t in 
+        the future (hence F_eq) the reported value of x falls in the interval [v - \delta, v + \delta] where
+        \delta = v * (w/100)
+        
+        formulas_Obs : dictionary
+        
+        The same information as in 'formulas' but organized as a dictionary. We are not sure which will be more 
+        convenient to  work with and hence just  hedging our bets. Can easily eliminate one of them.
         
         """
         Obs = df_data.columns.tolist()[1:]
-        # We convert all the data points into formulas. For convenience we also encode this 
-        # information as a dictionary in which each observable has a set of formulas assigned to it.
         formulas = []
         formulas_Obs = {x:[] for x in Obs}
         for i in range(len(df_data)):
@@ -151,32 +231,29 @@ class Train2Form:
             for x in Obs:
                 if d[x] >= 0:
                     formulas.append(('F_eq', d[0], x, d[x], tol[x]))
-                    # The above entry denotes at exactly d[0 time units in the future the observable x will have a value 
-                    # that lies in the interval [d[x]-tol[x], d[x]+tol[x]]
                     formulas_Obs[x].append(('F_eq', d[0], d[x], tol[x]))
-                    # the same information is coded above but this time for each observable.
         return formulas, formulas_Obs
 
     def save_res(self, to_save):
+        """nothing much to say here.
+        
+        """
         with open(self.args.outfile, 'wb') as f:
             pickle.dump(to_save, f)
 
     def run(self):
-        # first we get the file paths from the file_path 
-        # given by the user
+        """don't know what to add here.
+        
+        """
+    
         files = self.get_files() 
-        # TODO: Comment every line here to explain general program flow
+        
         time , dic = self.all_times(files)
         time = [float(t) for t in time]
         df_data = self.data(files, dic, time) 
-        w = self.w # TODO: What is this value and should we allow this to be set via the command line
-        #T_response: Yes, it can be set for now via the command line. Eventually  it can be another .csv file since
-        # we may want to specify different tolerances for different observables (and perhps even time points)
+        w = self.w 
         tol = self.tolerance(df_data, w)    
         formulas, formulas_Obs = self.trainingdata2formulas(df_data, tol)
-        #TODO: What do we want to save here? If this is a command line program it 
-        # probably should save some result somewhere
-        #T_response: Not necessary. A later script will use these lists.
         return formulas, formulas_Obs
 
 if __name__ == '__main__':
