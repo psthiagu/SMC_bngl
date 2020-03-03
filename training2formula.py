@@ -247,7 +247,6 @@ class Train2Form:
         """
     
         files = self.get_files() 
-        
         time , dic = self.all_times(files)
         time = [float(t) for t in time]
         df_data = self.data(files, dic, time) 

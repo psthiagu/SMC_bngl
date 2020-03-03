@@ -13,9 +13,15 @@ import roadrunner
 import training2formula as t2f  
 
 class SMCSimulator:
-    def __init__(self, config_file, dic_formulas):
-        # Parse config file here
-        self.configHandler = ConfigHandler(config_file)
+    def __init__(self, dic_formulas, config_file=None, handler=None):
+        if config_file is not None:
+            # Parse config file here
+            self.configHandler = ConfigHandler(config_file)
+        elif handler is not None:
+            self.configHandler = handler
+        else:
+            print("no way to get config file specified")
+            sys.exit()
         # use parsed configs
         self.xml_file = self.configHandler.xml_file
         self.bngl_file = self.configHandler.bngl_file
@@ -189,7 +195,7 @@ if __name__ == '__main__':
     t = t2f.Train2Form(fpath="data",w=0.1)
     formulas, dic_formulas = t.run()
     config_file = "config.yaml"
-    Sim = SMCSimulator(config_file, dic_formulas)
+    Sim = SMCSimulator(dic_formulas, config_file=config_file)
     print(Sim.simulate())
     # Ali: In case these are relevant I'm leaving them
     #model = backward_associations(xml_file, sp, parm)
