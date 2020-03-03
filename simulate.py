@@ -6,25 +6,29 @@ Created on Sun Apr 14 19:18:59 2019
 @author: thiyagu
 """
 from os import path
-import pandas as pd
-import matplotlib.pyplot as plt
-import argparse, glob, os, sys, pickle
+import argparse, glob, os, pickle
 from libsbml import *
+from ConfigHandler import ConfigHandler
 import roadrunner
-import sys
-import json
 import training2formula as t2f  
 
 class SMCSimulator:
-    def __init__(self, xml_file, bngl_file, est_params, dic_formulas):
-        self.xml_file = xml_file
-        self.bngl_file = bngl_file
-        self.name2id = self.backward_associations(xml_file, bngl_file)
+    def __init__(self, config_file, dic_formulas):
+        # Parse config file here
+        self.configHandler = ConfigHandler(config_file)
+        # use parsed configs
+        self.xml_file = self.configHandler.xml_file
+        self.bngl_file = self.configHandler.bngl_file
+        self.name2id = self.backward_associations(self.xml_file, self.bngl_file)
+        # parameters to estimate
+        self.est_parms = self.configHandler.est_parms
+        # set the simulation command using the info from the config file
+        self.configHandler.set_simulate_command(self)
         # TODO: This is a bit much, we might want to figure out a nicer
         # way to pull all this out or maybe we want to do this internally 
         # instead of explicitly
         self.simulator, self.I, self.parms, self.species_index, \
-                self.species_conc, self.est_parms_index, self.obs_index = self.initialize_rr(xml_file, self.name2id, est_parms, dic_formulas)
+                self.species_conc, self.est_parms_index, self.obs_index = self.initialize_rr(self.xml_file, self.name2id, self.est_parms, dic_formulas)
 
     def extract_basic_species_names(self, bngl_file):
         """get the species mentioned in the bngl model
@@ -180,27 +184,13 @@ class SMCSimulator:
             obs_index[o] =  P.index(o)        
         
         return (rr, I, P, species_index, species_conc, parms_index, obs_index)
-
-    # def simulate(self, m, name2index,new_conc, new_parms):
-    def simulate(self, t_end, t_num, start=0):
-        '''
-        Temporarily just run a basic simulation and think about 
-        how to structure this properly (e.g. pulling a simulation 
-        command from the user etc)
-        '''
-        return self.simulator.simulate(start, t_end, t_num)
     
 if __name__ == '__main__':
-    # sysargv[1] to be supplied as "list"
     t = t2f.Train2Form(fpath="data",w=0.1)
     formulas, dic_formulas = t.run()
-    est_parms = ["k_LeukB_log","k_LeukBM_log", "kf", "nb", "k4_act","k8_act", "k_tcb", "k4_ex", "k8_ex", "k4_kill","k8_kill", \
-                 "k4_tox", "k8_tox", "k_adh", "k_migrate_B", "k_migrate_BM", "kf_ifng", "kr_ifng", "kf_il2", "kr_il2", \
-                 "kf_il6", "kr_il6", "kf_il10", "kr_il10"]
-    xml_file = "comp31_sbml.xml"
-    bngl_file = "comp31.bngl"
-    Sim = SMCSimulator(xml_file, bngl_file, est_parms, dic_formulas)
-    print(Sim.simulate(100, 100))
+    config_file = "config.yaml"
+    Sim = SMCSimulator(config_file, dic_formulas)
+    print(Sim.simulate())
     # Ali: In case these are relevant I'm leaving them
     #model = backward_associations(xml_file, sp, parm)
     #print(m)
