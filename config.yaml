@@ -9,7 +9,9 @@ estimation_options:
               "k4_tox", "k8_tox", "k_adh", "k_migrate_B", "k_migrate_BM", "kf_ifng", "kr_ifng", "kf_il2", "kr_il2", 
               "kf_il6", "kr_il6", "kf_il10", "kr_il10"]
 simulation_options:
-  type: "librr_sim" # options: from_bngl and from_python
+  type: "from_python"
+  function: "my_sim.simulate"
+  # type: "librr_sim" # options: from_bngl and from_python
   start: 0   # starting point
   end:   100 # ending point
   num:   100 # number of steps

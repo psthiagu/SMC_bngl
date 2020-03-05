@@ -6,7 +6,7 @@ Created on Tue Mar 3 11:37:30 2020
 @author: sinan
 """ 
 
-import yaml, sys
+import yaml, sys, imp
 
 class ConfigHandler:
     def __init__(self, config_file):
@@ -87,5 +87,28 @@ class ConfigHandler:
     def _set_bngl_simulate(self, sim_dict):
         raise NotImplemented
 
-    def _set_python_simulate(self, sim_dict):
-        raise NotImplemented
+    def _set_python_simulate(self, sim_dict, obj):
+        """
+        sets the object.simulate function from a loaded 
+        function that takes in sim_dict and the SMCSimulator 
+        object as arguments
+        """
+        # TODO: add option to specify the path on top 
+        # of the module.function spec
+        func_path = sim_dict.get("function")
+        sim_func = self._load_function(func_path)
+        def simulate():
+            return sim_func(sim_dict, obj)
+        setattr(obj, "simulate", simulate)
+
+    def _load_function(self, func_path):
+        """
+        load function from module.function spec
+        """
+        splt = func_path.split(".")
+        assert len(splt) == 2, "Function needs to be given in format file.function"
+        fname, func_name = splt
+        fpath, pname, desc = imp.find_module(fname)
+        mod = imp.load_module(fname, fpath, pname, desc)
+        func = getattr(mod, func_name)
+        return func
