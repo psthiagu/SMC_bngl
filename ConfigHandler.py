@@ -76,6 +76,12 @@ class ConfigHandler:
             sys.exit()
 
     def _set_librr_simulate(self, sim_dict, obj):
+        '''
+        this is the basic way to setup a simulation
+        loads in either start/end/num to run the libroadrunner
+        simultor or runs multiple stages if "stages" is given 
+        in the YAML file.
+        '''
         # setting libroadrunner type simulation
         stages = sim_dict.get("stages", None)
         if stages:
@@ -108,9 +114,6 @@ class ConfigHandler:
                 return obj.simulator.simulate(start, end, num)
         setattr(obj, "simulate", simulate)
 
-    def _set_bngl_simulate(self, sim_dict):
-        raise NotImplemented
-
     def _set_python_simulate(self, sim_dict, obj):
         """
         sets the object.simulate function from a loaded 
@@ -136,3 +139,11 @@ class ConfigHandler:
         mod = imp.load_module(fname, fpath, pname, desc)
         func = getattr(mod, func_name)
         return func
+
+    def _set_bngl_simulate(self, sim_dict):
+        '''
+        load in the BNGL file and parse the action block
+        to set the simulate command
+        '''
+        raise NotImplemented
+

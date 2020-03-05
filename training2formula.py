@@ -12,15 +12,22 @@ import argparse, glob, os, sys, pickle
 
 
 class Train2Form:
-    def __init__(self, fpath=None, w=0.05, cmdline=False, outfile="t2f_out.pickle"):
+    def __init__(self, handler=None, fpath=None, w=0.05, cmdline=False, outfile="t2f_out.pickle"):
         '''
-        Fpath and w are required arguments
+        Either handler or fpath and w are required arguments
+        Handler will override other options. fpath default is "data" 
+        w default is 0.05
         '''
         if cmdline: 
             self._parse_args()
             self.fpath = self.args.file_path
             self.w = self.args.tolerance
             self.outfile = self.args.outfile
+        elif not (handler is None):
+            self.configHandler = handler
+            data_options = self.configHandler._config_dict.get("data_options")
+            self.fpath = data_options.get("data_path", "data")
+            self.w = data_options.get("w", 0.05)
         else:
             self.fpath = fpath
             self.w = w

@@ -197,7 +197,3 @@ if __name__ == '__main__':
     config_file = "config.yaml"
     Sim = SMCSimulator(dic_formulas, config_file=config_file)
     print(Sim.simulate())
-    # Ali: In case these are relevant I'm leaving them
-    #model = backward_associations(xml_file, sp, parm)
-    #print(m)
-    

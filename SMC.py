@@ -30,16 +30,16 @@ class SMC:
         self.args = self.parser.parse_args()
 
     def run(self):
-        data_options = self.configHandler._config_dict["data_options"]
-        data_path = data_options["data_path"]
-        w = data_options["w"]
-        t = t2f.Train2Form(fpath=data_path, w=w)
-        formulas, dic_formulas = t.run()
-        self.Simulator = SMCSimulator(dic_formulas, handler=self.configHandler)
+        # TODO: What else do we need from data_options? any tolerances?
+        # any other relevant options that needs passed in? 
+        self.t2form = t2f.Train2Form(handler=self.configHandler) 
+        self.formulas, self.dic_formulas = self.t2form.run()
+        self.Simulator = SMCSimulator(self.dic_formulas, handler=self.configHandler)
+        # Note, self.configHandler has all the estimation stuff 
+        # that was given in the YAML file.
         res = self.Simulator.simulate()
         return res 
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
     S.run()
-    # print(S.run())
