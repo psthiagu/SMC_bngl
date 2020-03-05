@@ -77,11 +77,32 @@ class ConfigHandler:
 
     def _set_librr_simulate(self, sim_dict, obj):
         # setting libroadrunner type simulation
-        start = sim_dict.get("start", 0)
-        end   = sim_dict.get("end", 100)
-        num   = sim_dict.get("num", 100)
-        def simulate():
-            return obj.simulator.simulate(start, end, num)
+        stages = sim_dict.get("stages", None)
+        if stages:
+            def simulate():
+                for stage in sorted(stages):
+                    stage_dict = stages[stage]
+                    param_sets = stage_dict.get("params",None)
+                    if param_sets:
+                        # set parameters
+                        for param in param_sets:
+                            setattr(obj.simulator, param, param_sets[param])
+                    num = stage_dict.get("num", 100)
+                    if stage_dict.get("sim_len",None):
+                        sim_len = stage_dict.get("sim_len")
+                        start = end
+                        end += sim_len
+                    else:
+                        start = stage_dict.get("start", 0)
+                        end   = stage_dict.get("end", 100)
+                    result = obj.simulator.simulate(start, end, num)
+                return result
+        else:
+            start = sim_dict.get("start", 0)
+            end   = sim_dict.get("end", 100)
+            num   = sim_dict.get("num", 100)
+            def simulate():
+                return obj.simulator.simulate(start, end, num)
         setattr(obj, "simulate", simulate)
 
     def _set_bngl_simulate(self, sim_dict):
@@ -98,7 +119,7 @@ class ConfigHandler:
         func_path = sim_dict.get("function")
         sim_func = self._load_function(func_path)
         def simulate():
-            return sim_func(sim_dict, obj)
+            return sim_func(sim_dict, obj.simulator)
         setattr(obj, "simulate", simulate)
 
     def _load_function(self, func_path):

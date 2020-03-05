@@ -36,7 +36,8 @@ class SMC:
         t = t2f.Train2Form(fpath=data_path, w=w)
         formulas, dic_formulas = t.run()
         self.Simulator = SMCSimulator(dic_formulas, handler=self.configHandler)
-        return self.Simulator.simulate()
+        res = self.Simulator.simulate()
+        return res 
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)

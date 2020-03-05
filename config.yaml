@@ -9,9 +9,26 @@ estimation_options:
               "k4_tox", "k8_tox", "k_adh", "k_migrate_B", "k_migrate_BM", "kf_ifng", "kr_ifng", "kf_il2", "kr_il2", 
               "kf_il6", "kr_il6", "kf_il10", "kr_il10"]
 simulation_options:
-  type: "from_python"
-  function: "my_sim.simulate"
-  # type: "librr_sim" # options: from_bngl and from_python
-  start: 0   # starting point
-  end:   100 # ending point
-  num:   100 # number of steps
+  # type: "from_python"
+  # function: "my_sim.simulate"
+  type: "librr_sim" # options: from_bngl and from_python
+  stages: # These should be numbers and ordered in order
+    0:
+      params: 
+        kf: 10
+        nb: 5
+      start: 0   # starting point, assumed 0 if not given
+      end:   100 # ending point, assumed 100 if not given
+      num:   100 # number of steps, assumed 100 if not given
+    1:
+      params: 
+        kf_il6: 100
+      sim_len:   100 # only for 2nd stage and on, fails if not
+      num:       100 
+    2:
+      params: 
+        k_migrate_B: 1
+        k_migrate_BM: 0.1
+        kf_ifng: 10
+      sim_len:   100
+      num:       100
