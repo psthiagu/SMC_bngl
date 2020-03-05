@@ -41,4 +41,5 @@ class SMC:
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
-    print(S.run())
+    S.run()
+    # print(S.run())

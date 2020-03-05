@@ -81,11 +81,13 @@ class ConfigHandler:
         if stages:
             def simulate():
                 for stage in sorted(stages):
+                    print("Running stage {}".format(stage))
                     stage_dict = stages[stage]
                     param_sets = stage_dict.get("params",None)
                     if param_sets:
                         # set parameters
                         for param in param_sets:
+                            print("setting paramter {} to {}".format(param, param_sets[param]))
                             setattr(obj.simulator, param, param_sets[param])
                     num = stage_dict.get("num", 100)
                     if stage_dict.get("sim_len",None):
@@ -95,6 +97,7 @@ class ConfigHandler:
                     else:
                         start = stage_dict.get("start", 0)
                         end   = stage_dict.get("end", 100)
+                    print("simulating start {}, end {}, num pts {}".format(start, end, num))
                     result = obj.simulator.simulate(start, end, num)
                 return result
         else:
