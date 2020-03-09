@@ -33,16 +33,18 @@ class SMCSimulator:
         # TODO: This is a bit much, we might want to figure out a nicer
         # way to pull all this out or maybe we want to do this internally 
         # instead of explicitly
-        self.simulator, self.I, self.parms, self.species_index, \
-                self.species_conc, self.est_parms_index, self.obs_index = self.initialize_rr(self.xml_file, self.name2id, self.est_parms, dic_formulas)
+        self.simulator, self.species_index, self.est_parms_index, \
+                self.obs_index = self.initialize_rr(self.xml_file, \
+                        self.name2id, self.est_parms, dic_formulas)
         if self.configHandler.obs_list is not None:
             # sel = self.simulator.timeCourseSelections
             # self.simulator.timeCourseSelections = sel + self.configHandler.obs_list
             conv_obs_list = []
+            flt_names = map(lambda x: "["+x+"]", self.floating_ids)
             for elem in self.configHandler.obs_list:
                 if elem in self.name2id.keys():
                     conv_obs_list.append("["+self.name2id[elem]+"]")
-                elif hasattr(self.simulator, elem):
+                elif hasattr(self.simulator, elem) or (elem in flt_names):
                     conv_obs_list.append(elem)
                 else:
                     print("observable {} is neither in species conversion table nor in roadrunner object".format(elem))
@@ -185,6 +187,8 @@ class SMCSimulator:
         rr = roadrunner.RoadRunner(xml_file)
         m = rr.model
         I = m.getFloatingSpeciesIds()
+        # setting this here
+        self.floating_ids = I
         C = m.getFloatingSpeciesConcentrations()
         species_index = {}
         species = name2index.keys()
@@ -192,8 +196,12 @@ class SMCSimulator:
         for s in species:
             species_index[s] = I.index(name2index[s])
             species_conc[s] = C[species_index[s]]
-        
+        # 
+        self.spec_conc = species_conc
+        # 
         P = m.getGlobalParameterIds()
+        # setting this here
+        self.param_ids = P
         
         parms_index = {}
         for p in est_parms:
@@ -205,7 +213,7 @@ class SMCSimulator:
         for o in obs:
             obs_index[o] =  P.index(o)        
         
-        return (rr, I, P, species_index, species_conc, parms_index, obs_index)
+        return (rr, species_index, parms_index, obs_index)
 
     def simulate(self):
         res = self._simulate()
@@ -213,6 +221,14 @@ class SMCSimulator:
             if len(res.colnames) == len(self.conv_obs_list):
                 res.colnames = self.configHandler.obs_list
         return res
+
+    def reset_simulator(self, values=None):
+        if values is None:
+            self.simulator.resetAll()
+        else:
+            # TODO: Only reset values here
+            raise NotImplemented
+
     
 if __name__ == '__main__':
     t = t2f.Train2Form(fpath="data",w=0.1)

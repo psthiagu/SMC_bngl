@@ -38,8 +38,13 @@ class SMC:
         # Note, self.configHandler has all the estimation stuff 
         # that was given in the YAML file.
         res = self.Simulator.simulate()
+        # TODO: reset simulator, note that specific value 
+        # resetting is not implemented yet
+        # e.g. self.Simulator.reset_simulator()
+        # Not implemented: self.Simulator.reset_simulator(["stuff"])
         return res 
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
     res = S.run()
+    print(res.colnames)
