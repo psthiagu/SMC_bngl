@@ -38,7 +38,19 @@ class SMCSimulator:
         if self.configHandler.obs_list is not None:
             # sel = self.simulator.timeCourseSelections
             # self.simulator.timeCourseSelections = sel + self.configHandler.obs_list
-            self.simulator.timeCourseSelections = self.configHandler.obs_list
+            conv_obs_list = []
+            for elem in self.configHandler.obs_list:
+                if elem in self.name2id.keys():
+                    conv_obs_list.append("["+self.name2id[elem]+"]")
+                elif hasattr(self.simulator, elem):
+                    conv_obs_list.append(elem)
+                else:
+                    print("observable {} is neither in species conversion table nor in roadrunner object".format(elem))
+            try:
+                self.simulator.timeCourseSelections = conv_obs_list
+            except RuntimeError:
+                print("an element in the observables list doesn't match with roadrunner simulator. given list after attempting to convert: {}".format(conv_obs_list))
+            self.conv_obs_list = conv_obs_list
 
     def extract_basic_species_names(self, bngl_file):
         """get the species mentioned in the bngl model
@@ -194,6 +206,13 @@ class SMCSimulator:
             obs_index[o] =  P.index(o)        
         
         return (rr, I, P, species_index, species_conc, parms_index, obs_index)
+
+    def simulate(self):
+        res = self._simulate()
+        if hasattr(self, "conv_obs_list"):
+            if len(res.colnames) == len(self.conv_obs_list):
+                res.colnames = self.configHandler.obs_list
+        return res
     
 if __name__ == '__main__':
     t = t2f.Train2Form(fpath="data",w=0.1)

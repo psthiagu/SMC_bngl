@@ -121,7 +121,7 @@ class ConfigHandler:
             num   = sim_dict.get("num", 100)
             def simulate():
                 return obj.simulator.simulate(start, end, num)
-        setattr(obj, "simulate", simulate)
+        setattr(obj, "_simulate", simulate)
 
     def _set_python_simulate(self, sim_dict, obj):
         """
@@ -135,7 +135,7 @@ class ConfigHandler:
         sim_func = self._load_function(func_path)
         def simulate():
             return sim_func(sim_dict, obj.simulator)
-        setattr(obj, "simulate", simulate)
+        setattr(obj, "_simulate", simulate)
 
     def _load_function(self, func_path):
         """
