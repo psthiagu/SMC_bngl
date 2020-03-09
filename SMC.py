@@ -42,4 +42,4 @@ class SMC:
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
-    S.run()
+    res = S.run()
