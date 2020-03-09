@@ -35,6 +35,9 @@ class SMCSimulator:
         # instead of explicitly
         self.simulator, self.I, self.parms, self.species_index, \
                 self.species_conc, self.est_parms_index, self.obs_index = self.initialize_rr(self.xml_file, self.name2id, self.est_parms, dic_formulas)
+        if self.configHandler.obs_list is not None:
+            sel = self.simulator.timeCourseSelections
+            self.simulator.timeCourseSelections = sel + self.configHandler.obs_list
 
     def extract_basic_species_names(self, bngl_file):
         """get the species mentioned in the bngl model

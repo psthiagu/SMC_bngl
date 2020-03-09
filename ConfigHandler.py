@@ -24,8 +24,9 @@ class ConfigHandler:
             print("Files need to be defined in the configuration file")
             sys.exit()
         est_dict = self._config_dict.get("estimation_options", None)
-        if files_dict is not None:
+        if est_dict is not None:
             self.est_parms = est_dict.get("est_parms", None)
+            self.obs_list = est_dict.get("observables", None)
         else:
             # TODO: Error out nicely or add logical defaults
             print("We need estimation options to be set")
@@ -54,6 +55,14 @@ class ConfigHandler:
     @est_parms.setter
     def est_parms(self, values):
         self._est_parms = values
+
+    @property
+    def obs_list(self):
+        return self._obs_list
+
+    @obs_list.setter
+    def obs_list(self, values):
+        self._obs_list = values
 
     def set_simulate_command(self, obj):
         # given the simulator class, we need to set the simulate command
