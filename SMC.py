@@ -47,4 +47,4 @@ class SMC:
 if __name__ == '__main__':
     S = SMC(cmdline=True)
     res = S.run()
-    print(res.dtype.names)
+    print(res.shape, res.dtype.names)

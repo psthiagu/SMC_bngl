@@ -121,11 +121,13 @@ class ConfigHandler:
                     if ctr > 0:
                         new_res = obj.simulator.simulate(start, end, num)
                         stacked = np.vstack([result, new_res])
-                        result = new_res
+                        result = stacked 
+                        print(stacked.shape)
                     else:
                         result = obj.simulator.simulate(start, end, num)
                         cnames = result.colnames
                     ctr += 1
+                print(stacked.shape)
                 stacked = list(map(tuple, stacked))
                 dtype = list(zip(cnames, ["float64" for i in range(len(cnames))]))
                 return np.array(stacked, dtype=dtype)
