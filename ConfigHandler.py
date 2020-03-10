@@ -6,7 +6,7 @@ Created on Tue Mar 3 11:37:30 2020
 @author: sinan
 """ 
 
-import yaml, sys, imp
+import yaml, sys, imp, math
 import numpy as np
 
 class ConfigHandler:
@@ -14,6 +14,8 @@ class ConfigHandler:
         with open(config_file, "r") as f:
             self._config_dict = yaml.full_load(f)
         self._set_properties()
+        self.eval_namespace = {'math': math,
+                               'numpy': np}
 
     def _set_properties(self):
         files_dict = self._config_dict.get("files", None)
@@ -109,25 +111,28 @@ class ConfigHandler:
                         for param in param_sets:
                             print("setting paramter {} to {}".format(param, param_sets[param]))
                             setattr(obj.simulator, param, param_sets[param])
-                    num = stage_dict.get("num", 100)
-                    if stage_dict.get("sim_len",None):
-                        sim_len = stage_dict.get("sim_len")
+                    num = stage_dict.get("num", 100) + 1
+                    if stage_dict.get("start",None) is None:
+                        # assuming we are past stage 0
                         start = end
-                        end += sim_len
+                        end = stage_dict.get("end")
                     else:
                         start = stage_dict.get("start", 0)
                         end   = stage_dict.get("end", 100)
                     print("simulating start {}, end {}, num pts {}".format(start, end, num))
+                    start, end, num = self.eval_if_string(start, end, num)
+                    import IPython
+                    IPython.embed()
+                    
                     if ctr > 0:
                         new_res = obj.simulator.simulate(start, end, num)
-                        stacked = np.vstack([result, new_res])
+                        stacked = np.vstack([result, new_res[1:]])
                         result = stacked 
                         print(stacked.shape)
                     else:
                         result = obj.simulator.simulate(start, end, num)
                         cnames = result.colnames
                     ctr += 1
-                print(stacked.shape)
                 stacked = list(map(tuple, stacked))
                 dtype = list(zip(cnames, ["float64" for i in range(len(cnames))]))
                 return np.array(stacked, dtype=dtype)
@@ -136,7 +141,10 @@ class ConfigHandler:
             end   = sim_dict.get("end", 100)
             num   = sim_dict.get("num", 100)
             def simulate():
-                return obj.simulator.simulate(start, end, num)
+                res = obj.simulator.simulate(start, end, num)
+                dtype = list(zip(res.colnames, ["float64" for i in range(len(res.colnames))]))
+                vals = list(map(tuple, res))
+                return np.array(vals, dtype=dtype)
         setattr(obj, "_simulate", simulate)
 
     def _set_python_simulate(self, sim_dict, obj):
@@ -172,3 +180,13 @@ class ConfigHandler:
         '''
         raise NotImplemented
 
+    def eval_if_string(self, *args):
+        res = []
+        # check if any value is a string
+        for arg in args:
+            if isinstance(arg, str):
+                earg = eval(arg,self.eval_namespace)
+                res.append(earg)
+            else:
+                res.append(arg)
+        return res
