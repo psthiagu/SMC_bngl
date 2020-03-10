@@ -46,7 +46,7 @@ class SMCSimulator:
                 rev_obs_list.append(elem)
                 if elem in self.name2id.keys():
                     conv_obs_list.append("["+self.name2id[elem]+"]")
-                elif hasattr(self.simulator, elem) or (elem in flt_names):
+                elif hasattr(self.simulator, elem) or (elem in flt_names) or elem == "time":
                     conv_obs_list.append(elem)
                 else:
                     print("observable {} is neither in species conversion table nor in roadrunner object".format(elem))

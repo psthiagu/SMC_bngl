@@ -114,6 +114,7 @@ class ConfigHandler:
                         end   = stage_dict.get("end", 100)
                     print("simulating start {}, end {}, num pts {}".format(start, end, num))
                     result = obj.simulator.simulate(start, end, num)
+                    print(result.shape, result['time'])
                 return result
         else:
             start = sim_dict.get("start", 0)
