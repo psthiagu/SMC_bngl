@@ -7,6 +7,7 @@ Created on Tue Mar 3 11:37:30 2020
 """ 
 
 import yaml, sys, imp
+import numpy as np
 
 class ConfigHandler:
     def __init__(self, config_file):
@@ -95,6 +96,10 @@ class ConfigHandler:
         stages = sim_dict.get("stages", None)
         if stages:
             def simulate():
+                # TODO: this needs optimized, by a lot. 
+                # issue: stacking will copy the arrays, so it's memory inefficient
+                # solution: pre-allocate an array first, then run the simulations
+                ctr = 0
                 for stage in sorted(stages):
                     print("Running stage {}".format(stage))
                     stage_dict = stages[stage]
@@ -113,9 +118,17 @@ class ConfigHandler:
                         start = stage_dict.get("start", 0)
                         end   = stage_dict.get("end", 100)
                     print("simulating start {}, end {}, num pts {}".format(start, end, num))
-                    result = obj.simulator.simulate(start, end, num)
-                    print(result.shape, result['time'])
-                return result
+                    if ctr > 0:
+                        new_res = obj.simulator.simulate(start, end, num)
+                        stacked = np.vstack([result, new_res])
+                        result = new_res
+                    else:
+                        result = obj.simulator.simulate(start, end, num)
+                        cnames = result.colnames
+                    ctr += 1
+                stacked = list(map(tuple, stacked))
+                dtype = list(zip(cnames, ["float64" for i in range(len(cnames))]))
+                return np.array(stacked, dtype=dtype)
         else:
             start = sim_dict.get("start", 0)
             end   = sim_dict.get("end", 100)

@@ -5,12 +5,13 @@ Created on Sun Apr 14 19:18:59 2019
 
 @author: thiyagu
 """
-from os import path
 import argparse, glob, os, pickle
-from libsbml import *
-from ConfigHandler import ConfigHandler
 import roadrunner
 import training2formula as t2f  
+import numpy as np
+from os import path
+from libsbml import *
+from ConfigHandler import ConfigHandler
 
 class SMCSimulator:
     def __init__(self, dic_formulas, config_file=None, handler=None):
@@ -224,8 +225,10 @@ class SMCSimulator:
     def simulate(self):
         res = self._simulate()
         if hasattr(self, "conv_obs_list"):
-            if len(res.colnames) == len(self.conv_obs_list):
-                res.colnames = self.rev_obs_list
+            if len(res.dtype.names) == len(self.conv_obs_list):
+                new_dtype = [(i,"float64") for i in self.rev_obs_list]
+                res = np.array(res, dtype=new_dtype)
+                # res.colnames = self.rev_obs_list
         return res
 
     def reset_simulator(self, values=None):
