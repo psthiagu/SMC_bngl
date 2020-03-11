@@ -121,8 +121,6 @@ class ConfigHandler:
                         end   = stage_dict.get("end", 100)
                     print("simulating start {}, end {}, num pts {}".format(start, end, num))
                     start, end, num = self.eval_if_string(start, end, num)
-                    import IPython
-                    IPython.embed()
                     
                     if ctr > 0:
                         new_res = obj.simulator.simulate(start, end, num)

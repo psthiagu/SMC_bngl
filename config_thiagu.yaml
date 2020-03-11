@@ -1,0 +1,52 @@
+data_options:
+  data_path: "data"
+  w: 0.1
+files:
+  xml_file: "comp31_sbml.xml"
+  bngl_file: "comp31.bngl"
+estimation_options:
+  est_parms: ["k_LeukB_log","k_LeukBM_log", "kf", "nb", "k4_act","k8_act", "k_tcb", "k4_ex", "k8_ex", "k4_kill","k8_kill", 
+              "k4_tox", "k8_tox", "k_adh", "k_migrate_B", "k_migrate_BM", "kf_ifng", "kr_ifng", "kf_il2", "kr_il2", 
+              "kf_il6", "kr_il6", "kf_il10", "kr_il10"]
+  observables: ['time', 'Leuk_BM', 'Leuk_B', 'IL2_B', 'Tc8_B', 'Tc4_B', 'IFNg_B', 'Tc8_BM', 'IL10_B', 'A_B', 'Tc4_BM', 'IL6_B']
+simulation_options:
+  # type: "from_python"
+  # function: "my_sim.simulate"
+  type: "librr_sim" # options: from_bngl and from_python
+  stages: # These should be numbers and ordered in order
+    0:
+      params: 
+        dose: 0.1
+      start: 0   # starting point, assumed 0 if not given
+      end:  1/24
+  # ending point, assumed 100 if not given
+      num:   20 # number of steps, assumed 100 if not given
+    1:
+      params: 
+        dose: 0
+      end: 7 # only for 2nd stage and on, fails if not
+      num: 140
+    2:
+      params: 
+        dose: 1.0
+      end: 7.042
+      num: 20
+      
+    3: 
+      params: 
+        dose: 0
+      end: 14 # only for 2nd stage and on, fails if not
+      num: 140
+    
+    4:
+      params: 
+        dose: 5.0        
+      end: 14.024
+      num: 20
+      
+    5: 
+      params: 
+        dose: 0
+      end: 21  # only for 2nd stage and on, fails if not
+      num: 140
+      
