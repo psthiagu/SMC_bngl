@@ -24,6 +24,11 @@ class SMCSimulator:
             print("no way to get config file specified")
             sys.exit()
         # use parsed configs
+        self.dic_formulas = dic_formulas
+        self.times = self.get_times_from_formulas(dic_formulas)
+        # TODO: the times are not accurate right now
+        # remove this once it's fixed
+        self.times = np.array(self.times)/60.0
         self.xml_file = self.configHandler.xml_file
         self.bngl_file = self.configHandler.bngl_file
         self.name2id = self.backward_associations(self.xml_file, self.bngl_file)
@@ -36,7 +41,7 @@ class SMCSimulator:
         # instead of explicitly
         self.simulator, self.species_index, self.est_parms_index, \
                 self.obs_index = self.initialize_rr(self.xml_file, \
-                        self.name2id, self.est_parms, dic_formulas)
+                        self.name2id, self.est_parms, self.dic_formulas)
         if self.configHandler.obs_list is not None:
             # sel = self.simulator.timeCourseSelections
             # self.simulator.timeCourseSelections = sel + self.configHandler.obs_list
@@ -60,6 +65,15 @@ class SMCSimulator:
                 print("an element in the observables list doesn't match with roadrunner simulator. given list after attempting to convert: {}".format(conv_obs_list))
             self.conv_obs_list = conv_obs_list
             self.rev_obs_list = rev_obs_list
+
+    def get_times_from_formulas(self, formulas):
+        all_times = []
+        for key in formulas:
+            formula = formulas[key]
+            formula_times = list(map(lambda x: x[1], formula))
+            all_times += formula_times
+        times = sorted(list(set(all_times)))
+        return times
 
     def extract_basic_species_names(self, bngl_file):
         """get the species mentioned in the bngl model

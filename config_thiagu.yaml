@@ -18,8 +18,7 @@ simulation_options:
       params: 
         dose: 0.1
       start: 0   # starting point, assumed 0 if not given
-      end:  1/24
-  # ending point, assumed 100 if not given
+      end:  1/24 # ending point, assumed 100 if not given
       num:   20 # number of steps, assumed 100 if not given
     1:
       params: 
@@ -29,7 +28,7 @@ simulation_options:
     2:
       params: 
         dose: 1.0
-      end: 7.042
+      end: 169/24
       num: 20
       
     3: 
@@ -41,7 +40,7 @@ simulation_options:
     4:
       params: 
         dose: 5.0        
-      end: 14.024
+      end: 337/24
       num: 20
       
     5: 
@@ -49,4 +48,3 @@ simulation_options:
         dose: 0
       end: 21  # only for 2nd stage and on, fails if not
       num: 140
-      

@@ -94,6 +94,8 @@ class ConfigHandler:
         simultor or runs multiple stages if "stages" is given 
         in the YAML file.
         '''
+        # Now we can get the times we need to hit here
+        print("experimental time points: {}".format(obj.times))
         # setting libroadrunner type simulation
         stages = sim_dict.get("stages", None)
         if stages:
@@ -119,14 +121,12 @@ class ConfigHandler:
                     else:
                         start = stage_dict.get("start", 0)
                         end   = stage_dict.get("end", 100)
-                    print("simulating start {}, end {}, num pts {}".format(start, end, num))
                     start, end, num = self.eval_if_string(start, end, num)
-                    
+                    print("simulating start {}, end {}, num pts {}".format(start, end, num))
                     if ctr > 0:
                         new_res = obj.simulator.simulate(start, end, num)
                         stacked = np.vstack([result, new_res[1:]])
                         result = stacked 
-                        print(stacked.shape)
                     else:
                         result = obj.simulator.simulate(start, end, num)
                         cnames = result.colnames
