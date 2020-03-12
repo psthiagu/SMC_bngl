@@ -10,6 +10,7 @@ import yaml, sys, argparse
 import training2formula as t2f  
 from simulate import SMCSimulator
 from ConfigHandler import ConfigHandler
+from modelcheck import ModelChecker
 
 class SMC:
     def __init__(self, config_file=None, cmdline=False):
@@ -38,13 +39,15 @@ class SMC:
         # Note, self.configHandler has all the estimation stuff 
         # that was given in the YAML file.
         res = self.Simulator.simulate()
+        self.MC = ModelChecker(self.dic_formulas)
+        check = self.MC.modelcheck(res)
         # TODO: reset simulator, note that specific value 
         # resetting is not implemented yet
         # e.g. self.Simulator.reset_simulator()
         # Not implemented: self.Simulator.reset_simulator(["stuff"])
-        return res 
+        return check
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
-    res = S.run()
-    # print(res.shape, res.dtype.names, res['time'])
+    mc_res = S.run()
+    print(mc_res)

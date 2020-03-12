@@ -6,12 +6,6 @@ Created on Tue Mar 3 11:37:30 2020
 @author: sinan
 """ 
 
-import yaml, sys, argparse
-import training2formula as t2f  
-from simulate import SMCSimulator
-from ConfigHandler import ConfigHandler
-from SMC import SMC
-
 class ModelChecker:
     def __init__(self, formulas):
         self.formulas = formulas
@@ -44,12 +38,12 @@ class ModelChecker:
                         dic_poisson[ob_name] = 0
         return dic_poisson
                 
-if __name__ == '__main__':
-    S = SMC(cmdline=True)
-    res_data = S.run()
-    MC = ModelChecker(formulas=S.dic_formulas)
-    dic_poisson = MC.modelcheck(res_data)
-    print(dic_poisson)
+# if __name__ == '__main__':
+#     S = SMC(cmdline=True)
+#     res_data = S.run()
+#     MC = ModelChecker(formulas=S.dic_formulas)
+#     dic_poisson = MC.modelcheck(res_data)
+#     print(dic_poisson)
     
     
     
