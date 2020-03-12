@@ -39,7 +39,7 @@ class SMC:
         # Note, self.configHandler has all the estimation stuff 
         # that was given in the YAML file.
         res = self.Simulator.simulate()
-        self.MC = ModelChecker(self.dic_formulas)
+        self.MC = ModelChecker(self.formulas)
         check = self.MC.modelcheck(res)
         # TODO: reset simulator, note that specific value 
         # resetting is not implemented yet
