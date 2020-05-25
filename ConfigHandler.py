@@ -99,6 +99,10 @@ class ConfigHandler:
         # setting libroadrunner type simulation
         stages = sim_dict.get("stages", None)
         if stages:
+            # TODO: this should take in a keyword argument, nsims
+            # and run the simulator nsims times and return the 
+            # final results of all of them, stacked
+            # TODO: Eventually make this paralell
             def simulate():
                 # TODO: this needs optimized, by a lot. 
                 # issue: stacking will copy the arrays, so it's memory inefficient
