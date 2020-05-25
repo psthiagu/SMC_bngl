@@ -118,8 +118,7 @@ class ConfigHandler:
                         # assuming we are past stage 0
                         start = end
                         # TODO: fail if this is not given
-                        sim_len = float(stage_dict.get("sim_len"))
-                        end   = start + sim_len
+                        end   = stage_dict.get("end")
                     else:
                         start = stage_dict.get("start", 0)
                         end = stage_dict.get("end", 100)

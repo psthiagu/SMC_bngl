@@ -49,10 +49,11 @@ class SMC:
         # Note, self.configHandler has all the estimation stuff 
         # that was given in the YAML file.
         res = self.Simulator.simulate()
-        print(res.shape, res["time"])
-        print(res)
-        # self.MC = ModelChecker(self.formulas)
-        # check = self.MC.modelcheck(res)
+        # print(res.shape, res["time"])
+        # print(res)
+        # import IPython;IPython.embed()
+        self.MC = ModelChecker(self.formulas)
+        check = self.MC.modelcheck(res)
         # TODO: reset simulator, note that specific value 
         # resetting is not implemented yet
         # e.g. self.Simulator.reset_simulator()
