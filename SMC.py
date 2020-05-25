@@ -14,6 +14,16 @@ from modelcheck import ModelChecker
 
 class SMC:
     def __init__(self, config_file=None, cmdline=False):
+        '''
+        Designed work as either a command line tool 
+        or loaded in as a library. 
+
+        If using the command line mode, be sure to include a 
+        config file via the -c option. If loaded in, be sure
+        to point to the correct config file via the 
+        config_file keyword argument.
+
+        '''
         if cmdline: 
             self._parse_args()
             self.configHandler = ConfigHandler(self.args.config_file)
@@ -39,6 +49,7 @@ class SMC:
         # Note, self.configHandler has all the estimation stuff 
         # that was given in the YAML file.
         res = self.Simulator.simulate()
+        print(res.shape, res["time"])
         self.MC = ModelChecker(self.formulas)
         check = self.MC.modelcheck(res)
         # TODO: reset simulator, note that specific value 
