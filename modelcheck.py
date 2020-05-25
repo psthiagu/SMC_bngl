@@ -29,9 +29,10 @@ class ModelChecker:
         for f in formulas:
             ob = f[2]
             t = f[1]/24
+            obs_res = res[ob] #.tolist()
             if t in T:
                 i = T.index(t)
-                if (f[3] - f[3]*f[4] <= res[ob].tolist()[i]) and (res[ob].tolist()[i] <= f[3] + f[3]*f[4]):
+                if (f[3] - f[3]*f[4] <= obs_res[i]) and (obs_res[i] <= f[3] + f[3]*f[4]):
                     dic_poisson[f] = 1
                 else:
                     dic_poisson[f] = 0
