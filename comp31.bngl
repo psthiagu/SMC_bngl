@@ -3,11 +3,13 @@ begin model
 
 begin molecule types
 	A(loc~B~P~BM,cd3,cd123)
-	Tc4(loc~B~BM,ex~0~1,syn,act~0~1,adh~0~1) 
-    Tc8(loc~B~BM,ex~0~1,syn,act~0~1,adh~0~1)
-   	CD34(loc~B~BM,a)
-    CD38(loc~B~BM,a)
-    Leuk(loc~B~BM,syn) 
+	Tc4(loc~B~BM,syn,act~0~1,adh~0~1) 
+        Tc8(loc~B~BM,syn,act~0~1,adh~0~1)
+ 
+  	CD34(loc~B~BM,a)
+        CD38(loc~B~BM,a)
+
+        Leuk(loc~B~BM,syn) 
 	CD123(loc~B~BM,a)
 	IFNg(loc~B~BM)
 	IL2(loc~B~BM)
@@ -16,114 +18,128 @@ begin molecule types
 end molecule types
 
 begin parameters
-    # Constants
 	NA	6.022e23
+
+	# Animal PK properties
 	mass 3.9 # average weight of monkey in kg
 	molwt 1.26e5
+	CL 83.0*mass # mL/day/monkey # Clearance rate from blood
+	V_B 56.0*mass # mL/monkey    # Volume of blood compartment
+	Q  427*mass  # mL/day/monkey # Transport rate between blood and periphery
+	V_P 180*mass  # mL/monkey    # Volume of peripheral comparment
+	V_BM 0.05*V_P # mL/monkey    # Volume of bone marrow compartment
+	# Flux partioning
+	q_P Q*V_P/(V_P + V_BM)
+	q_BM Q*V_BM/(V_P + V_BM)
 	
 	# Infusion properties
 	dose 0.1  # ug/kg dose administered over one hour infusion (value and sim protocol set below).
 	          # NOTE: 1 ug/kg = 1.864e13 molec / monkey = 17.86 ng/mL
 	          #       Kd's for monkey are 4284 ng/mL for CD3 and 38.68 ng/mL for CD123
 	duration 1/24 # duration of infusion in days
-	doserate dose/duration*mass*NA*1e-6/molwt # Infusion rate [molec/day]
-	eps 1e-10
-	
-	# Animal PK properties
-	CL   3.832473e+03 #83.0*mass # mL/day/monkey # Clearance rate from blood
-	V_B  218.4 #56.0*mass # mL/monkey    # Volume of blood compartment
-	Q    5.767320e+03 #427*mass  # mL/day/monkey # Transport rate between blood and periphery
-	V_P  702.0 #180*mass  # mL/monkey    # Volume of peripheral comparment
-	V_BM  35.1 #9*mass # mL/monkey    # Volume of bone marrow compartment
-
-	# Flux partioning (not fit directly)
-	q_P Q*V_P/(V_P + V_BM)
-	q_BM Q*V_BM/(V_P + V_BM)
+	#doserate dose/duration*mass*NA*1e-6/molwt # Infusion rate [molec/day]
 	
 	# T cell properties
-	tc4_dens_B  1.974e6  # [cells/ml] Resting cd4T cell density in blood # bing # initial value computed from data
-	tc4_dens_BM 2.808e6  # [cells/ml] Resting cd4T cell density in bone marrow	#initial values computed from data
-    tc8_dens_B  9.188e5  # [cells/ml] Resting cd8T cell density in blood # bing # initial value computed from data
-	tc8_dens_BM 1.469e6  # [cells/ml] Resting cd8T cell density in bone marrow	#initial values computed from data
-	rho3_init   6e4	# CD3 density, per T cell (El Hentati: 3.5e4-8.5e4; Offner: 6.7e4)
-	k_tc4_log   3.603764e-01    # [1/day] growth rate for naive CD4 T cell growth with logistic model
-    k_tc8_log   2.575366e+00    # [1/day] growth rate for naive CD8 T cell growth with logistic model
+	tc4_dens_B 431128152.0/(V_B)  # [cells/ml] Resting cd4T cell density in blood # bing # initial value computed from data
+	tc4_dens_BM 98546448.0/(V_BM)  # [cells/ml] Resting cd4T cell density in bone marrow	#initial values computed from data
+        tc8_dens_B 200672472.0/(V_B)  # [cells/ml] Resting cd8T cell density in blood # bing # initial value computed from data
+	tc8_dens_BM 51568608.0/(V_BM)  # [cells/ml] Resting cd8T cell density in bone marrow	#initial values computed from data
+        
 
-    Leuk_dens_B    9.600e4 # [cells/ml] # calculated average density from data
-    Leuk_dens_BM   2.422e5 # [cells/ml] # calculated average density from data
-	rho123_init	   1.45e4 # [/cell] Leuk CD123 density; setting it to be roughly 50% of the density for pDC cells.
-	k_LeukB_log    10  # 6.04855e+00 # [1/day] growth rate for Leuk's growth with logistic model; blood
-    k_LeukBM_log   10  # 2.58658e+01[1/day] growth rate for Leuk's growth with logistic model; BM
-    k_Leuk_deg_B   0.1
-    k_Leuk_deg_BM  0.1
-    k_Leuk_syn_B   Leuk_dens_B*k_Leuk_deg_B
-    k_Leuk_syn_BM  Leuk_dens_BM*k_Leuk_deg_BM
-    
+	rho3_init 6e4	# CD3 density, per T cell (El Hentati: 3.5e4-8.5e4; Offner: 6.7e4)
+	k_tc4_log 1    # [1/day] growth rate for naive cd4T cell growth with logistic model
+        k_tc8_log 1    # [1/day] growth rate for naive cd8T cell growth with logistic model
+
+    Leuk_dens_B  20966400.0/V_B # 50*1000 # [cells/ml] # calculated average density from data
+    Leuk_dens_BM 8500128.0/V_BM # 50*1000 # [cells/ml] # calculated average density from data
+	rho123_init	1.45e4 # [/cell] Leuk CD123 density; setting it to be roughly 50% of the density for pDC cells.
+	k_Leuk_log 80  # [1/day] growth rate for Leuk's growth with logistic model
 
 	# Asset binding parameters from Sanofi ONVT0141 Table 1 (Cynomolgus parameters used)
     # CD3 binding
-	kp3 5.2225e-12 #3.64e4*(3600*24)*1000/NA # 1/M 1/s -> mL/molec 1/day # Divide this number by appropriate volume for binding constant
-	km3 105.408 #1.22e-3*(3600*24) # 1/day
+	kp3 3.64e4*(3600*24)*1000/NA # 1/M 1/s -> mL/molec 1/day # Divide this number by appropriate volume for binding constant
+	km3 1.22e-3*(3600*24) # 1/day
 	# CD123 binding
-	kp123 2.89817336433079e-11 #2.02e5*(3600*24)*1000/NA # 1/M 1/s -> mL/molec 1/day # Divide this number by appropriate volume for binding constant
-	km123 5.42592 #6.28e-5*(3600*24) # 1/day
-	
+	kp123 2.02e5*(3600*24)*1000/NA # 1/M 1/s -> mL/molec 1/day # Divide this number by appropriate volume for binding constant
+	km123 6.28e-5*(3600*24) # 1/day
+
 	# Receptor trafficking and turnover parameters
 	kd3 0.3 # [1/day] Receptor degradation (Page et al.)
 	kb3 (kd3 * rho3_init) # [#/cell/day] Receptor synthesis that gives rho3_init steady-state
-	ki3 50 # [1/day] Bound receptor internalization rate constant (Page et al.)
-
+	ki3 50 # 1.12 # [1/day] Bound receptor internalization rate constant (Page et al.)
+	
 	# Synapse formation
-	kf 	4.36  # Cell encounter rate
-	nb  13.15 # Number of bridges in synapse
-
+	kf 1.14 # Cell encounter rate (Estimated)
+	nb 11 # Number of bridges in synapse
 	# T cell activation and proliferation
-	k4_act 1.586623e+02 # Rate at which cd4T cells get activated when synapsed
-    k8_act 2.481135e+02 # Rate at which cd8T cells get activated when synapsed
-	k_tcb  5.3e-2 # Rate of active T cell proliferation
-	k4_ex  8.2e-2 # Rate of active T cell exhaustion (exhausted T cells secrete cytokines and kill at a reduced rate)
-    k8_ex  1.11e-1 
-        
+	k4_act 39.3 # Rate at which cd4T cells get activated when synapsed
+        k8_act 39.3 # Rate at which cd8T cells get activated when synapsed
+	k_tcb 1/19 # Rate of active T cell proliferation
+
 	# Cytotoxcity
-	k4_kill  16   # Rate of killing by activated cd4T cells (inactive T cells can't kill)
-    k8_kill  33   # Rate of killing by activated cd8T cells (inactive T cells can't kill)
-	k4_tox   0.12 # Rate at which active cd4T cells die in synapse
-    k8_tox   0.12 # Rate at which active cd8T cells die in synapse
-	kr 	     10 # 2600  # [1/day] Synapse dissociation rate (lifetime ~ hours)
+	k4_kill  2 #1000*24 # Rate of killing by activated cd4T cells (inactive T cells can't kill)
+        k8_kill  2 #1000*24 # Rate of killing by activated cd8T cells (inactive T cells can't kill)
+	k4_tox  .05 # Rate at which active cd4T cells die in synapse
+        k8_tox  .05 # Rate at which active cd8T cells die in synapse
+	kr 70 * 24 # [1/day] Synapse dissociation rate (unknown)
 
 	# T-cell migration between blood and bone marrow
-	k_adh 20 # 270 # the expression of adhesion molecules on T_cells bound to A_blood molecules; \ 
+	k_adh 20 # the expression of adhesion molecules on T_cells bound to A_blood molecules; \ 
                # wild guess initial value; to be estimated;
-	k_migrate_B  9e3
-	k_migrate_BM 0.4 # 0.03 # T-cell revival due to T_cell trafficking from BM to blood; wild guess
+	k_migrate_B 10 
+	k_migrate_BM 1 # 0.03 # T-cell revival due to T_cell trafficking from BM to blood; wild guess
     thresh_adh 10
     thresh_rev 90
 
-    # cytokine secretion and degradation rates
-	kf_ifng 9.798275e+05
-	kr_ifng 2.174206e+01
-	kf_il2  1.138883e+05
-	kr_il2  10.095219e+00
-	kf_il6  2.140300e+06
-	kr_il6  2.399406e+02
-    kf_il10 36.600955e+05
-    kr_il10 0.530465e+01
-        
+    f_init 1.0
+    eps 1e-10
+    # cytokine secretion and absorption rates
+    kf_ifng 25 # [/cell/hr] IFNg production 
+    kr_ifng 10^-1.268 # [/cell/hr] IFNg degradation 
+    kf_il2 25 # [/cell/hr] IL2 production 
+    kr_il2 10^-1.268 # [/cell/hr] IL@ degradation 
+    kf_il6 25 # [/cell/hr] IL4 production 
+    kr_il6 10^-1.268 # [/cell/hr] IL4 degradation 
+    kf_il10 25 # [/cell/hr] IL10 production 
+    kr_il10 10^-1.268 # [/cell/hr] IL10 degradation 
+    
+# cytokines initial counts
+    ifng_B_init 0.0
+    il2_B_init 0.0
+    il6_B_init 0.0
+    il10_B_init 0.0
+
+    ifng_BM_init 0.0
+    il2_BM_init 0.0
+    il6_BM_init 0.0
+    il10_BM_init 0.0
+    
 end parameters
 
 begin species
-  Tc4(loc~B,syn,act~0,ex~0,adh~0)  tc4_dens_B*V_B
-  Tc8(loc~B,syn,act~0,ex~0,adh~0)  tc8_dens_B*V_B
-  Tc4(loc~BM,syn,act~0,ex~0,adh~0) tc4_dens_BM*V_BM # Source: TSK data.
-  Tc8(loc~BM,syn,act~0,ex~0,adh~0) tc8_dens_BM*V_BM # Source: TSK data.
-  CD34(loc~B,a)                    tc4_dens_B*V_B*rho3_init  
-  CD38(loc~B,a)                    tc8_dens_B*V_B*rho3_init 
-  CD34(loc~BM,a)                   tc4_dens_BM*V_BM*rho3_init  
-  CD38(loc~BM,a)                   tc8_dens_BM*V_BM*rho3_init  
-  Leuk(loc~B,syn)                  Leuk_dens_B*V_B
-  Leuk(loc~BM,syn)                 Leuk_dens_BM*V_BM
-  CD123(loc~B,a)                   Leuk_dens_B*V_B*rho123_init
-  CD123(loc~BM,a)                  Leuk_dens_BM*V_BM*rho123_init
+  Tc4(loc~B,syn,act~0,adh~0)  f_init*tc4_dens_B*V_B
+  Tc8(loc~B,syn,act~0,adh~0)  f_init*tc8_dens_B*V_B
+  Tc4(loc~BM,syn,act~0,adh~0) f_init*tc4_dens_BM*V_BM # Source: TSK data.
+  Tc8(loc~BM,syn,act~0,adh~0) f_init*tc8_dens_BM*V_BM # Source: TSK data.
+  CD34(loc~B,a)               f_init*tc4_dens_B*V_B*rho3_init  
+  CD38(loc~B,a)               f_init*tc8_dens_B*V_B*rho3_init 
+  CD34(loc~BM,a)              f_init*tc4_dens_BM*V_BM*rho3_init  
+  CD38(loc~BM,a)              f_init*tc8_dens_BM*V_BM*rho3_init  
+  Leuk(loc~B,syn)             f_init*Leuk_dens_B*V_B
+  Leuk(loc~BM,syn)            f_init*Leuk_dens_BM*V_BM
+  CD123(loc~B,a)             f_init*Leuk_dens_B*V_B*rho123_init
+  CD123(loc~BM,a)            f_init*Leuk_dens_BM*V_BM*rho123_init
+  # adding cytokines
+  IFNg(loc~B) ifng_B_init
+  IL2(loc~B)  il2_B_init
+  IL6(loc~B)  il6_B_init
+  IL10(loc~B) il10_B_init
+
+  IFNg(loc~BM) ifng_BM_init
+  IL2(loc~BM)  il2_BM_init
+  IL6(loc~BM)  il6_BM_init
+  IL10(loc~BM) il10_BM_init
+
   
 end species
 
@@ -131,10 +147,10 @@ begin observables
 	Molecules A_B A(loc~B)
 	Molecules A_P A(loc~P)
 	Molecules A_BM A(loc~BM)
-	Molecules Tc4_naive_B Tc4(loc~B,syn,act~0,ex~0,adh~0)
-        Molecules Tc8_naive_B Tc8(loc~B,syn,act~0,ex~0,adh~0)
-	Molecules Tc4_naive_BM Tc4(loc~BM,syn,act~0,ex~0,adh~0)
-        Molecules Tc8_naive_BM Tc8(loc~BM,syn,act~0,ex~0,adh~0)
+	Molecules Tc4_naive_B Tc4(loc~B,syn,act~0,adh~0)
+        Molecules Tc8_naive_B Tc8(loc~B,syn,act~0,adh~0)
+	Molecules Tc4_naive_BM Tc4(loc~BM,syn,act~0,adh~0)
+        Molecules Tc8_naive_BM Tc8(loc~BM,syn,act~0,adh~0)
 	Molecules Tc4_B Tc4(loc~B)
         Molecules Tc8_B Tc8(loc~B)
 	Molecules Tc4_BM Tc4(loc~BM)
@@ -183,30 +199,22 @@ begin observables
 
 
 	Molecules CD34_CD123_B CD34(loc~B,a!1).A(cd3!1,cd123!2).CD123(a!2)
-	Molecules CD38_CD123_B CD38(loc~B,a!1).A(cd3!1,cd123!2).CD123(a!2)
+        Molecules CD38_CD123_B CD38(loc~B,a!1).A(cd3!1,cd123!2).CD123(a!2)
 	Molecules CD34_CD123_BM CD34(loc~BM,a!1).A(cd3!1,cd123!2).CD123(a!2)
-    Molecules CD38_CD123_BM CD38(loc~BM,a!1).A(cd3!1,cd123!2).CD123(a!2)
+        Molecules CD38_CD123_BM CD38(loc~BM,a!1).A(cd3!1,cd123!2).CD123(a!2)
 	Molecules active4_synapse_B Leuk(loc~B,syn!1).Tc4(syn!1,act~1)
-    Molecules active8_synapse_B Leuk(loc~B,syn!1).Tc8(syn!1,act~1)
+        Molecules active8_synapse_B Leuk(loc~B,syn!1).Tc8(syn!1,act~1)
 	Molecules active4_synapse_BM Leuk(loc~BM,syn!1).Tc4(syn!1,act~1)
-    Molecules active8_synapse_BM Leuk(loc~BM,syn!1).Tc8(syn!1,act~1)
-	Molecules active4_nonex_synapse_B Leuk(loc~B,syn!1).Tc4(syn!1,ex~0,act~1)
-    Molecules active8_nonex_synapse_B Leuk(loc~B,syn!1).Tc8(syn!1,ex~0,act~1)
-	Molecules active4_nonex_synapse_BM Leuk(loc~BM,syn!1).Tc4(syn!1,ex~0,act~1)
-    Molecules active8_nonex_synapse_BM Leuk(loc~BM,syn!1).Tc8(syn!1,ex~0,act~1)
+        Molecules active8_synapse_BM Leuk(loc~BM,syn!1).Tc8(syn!1,act~1)
 	# T-cell trafficking related 
 	Molecules Tc4_ready_to_traffic Tc4(loc~B,syn,act~0,adh~1)
         Molecules Tc8_ready_to_traffic Tc8(loc~B,syn,act~0,adh~1)
         
-	# Cytokines
-    Molecules IFNg_B IFNg(loc~B)
-    Molecules IL2_B IL2(loc~B)
-    Molecules IL6_B IL6(loc~B)
-    Molecules IL10_B IL10(loc~B)
-    Molecules IFNg_BM IFNg(loc~BM)
-    Molecules IL2_BM IL2(loc~BM)
-    Molecules IL6_BM IL6(loc~BM)
-    Molecules IL10_BM IL10(loc~BM)
+        # adding cytokines
+        Molecules IFNg_B IFNg(loc~B)
+        Molecules IL2_B IL2(loc~B)
+        Molecules IL6_B IL6(loc~B)
+        Molecules IL10_B IL10(loc~B)
 
 end observables
 
@@ -251,18 +259,20 @@ begin functions
   n4_bridge_syn_BM() CD34_CD123_BM/(Leuk4_synapse_BM + eps)
   n8_bridge_syn_BM() CD38_CD123_BM/(Leuk8_synapse_BM + eps)
 
-  b3() 0 # km123/(km3 + km123) # Fraction of bridges that dissociate into CD3.A + CD123
+  b3() km123/(km3 + km123) # km123/(km3 + km123) # Fraction of bridges that dissociate into CD3.A + CD123
 
-  r4_kill_B() k4_kill*active4_nonex_synapse_B/(Leuk4_synapse_B + eps) # Stable form: Does not use nb
-  r8_kill_B() k8_kill*active8_nonex_synapse_B/(Leuk8_synapse_B + eps) # Stable form: Does not use nb
-  r4_kill_BM() k4_kill*active4_nonex_synapse_BM/(Leuk4_synapse_BM + eps)
-  r8_kill_BM() k8_kill*active8_nonex_synapse_BM/(Leuk8_synapse_BM + eps)
+  r4_kill_B() k4_kill*active4_synapse_B/(Leuk4_synapse_B + eps) # Stable form: Does not use nb
+  r8_kill_B() k8_kill*active8_synapse_B/(Leuk8_synapse_B + eps) # Stable form: Does not use nb
 
-  r4_kill123_B() k4_kill*active4_nonex_synapse_B/(CD123_free_B + CD123_bound_B + eps)*(CD123_B/(Leuk_B + eps) - CD34_CD123_B/(Leuk4_synapse_B + eps))
-  r8_kill123_B() k8_kill*active8_nonex_synapse_B/(CD123_free_B + CD123_bound_B + eps)*(CD123_B/(Leuk_B + eps) - CD38_CD123_B/(Leuk8_synapse_B + eps))
+  r4_kill_BM() k4_kill*active4_synapse_BM/(Leuk4_synapse_BM + eps)
+  r8_kill_BM() k8_kill*active8_synapse_BM/(Leuk8_synapse_BM + eps)
 
-  r4_kill123_BM() k4_kill*active4_nonex_synapse_BM/(CD123_free_BM + CD123_bound_BM + eps)*(CD123_BM/(Leuk_BM + eps) - CD34_CD123_BM/(Leuk4_synapse_BM + eps))
-  r8_kill123_BM() k8_kill*active8_nonex_synapse_BM/(CD123_free_BM + CD123_bound_BM + eps)*(CD123_BM/(Leuk_BM + eps) - CD38_CD123_BM/(Leuk8_synapse_BM + eps))
+  r4_kill123_B() k4_kill*active4_synapse_B/(CD123_free_B + CD123_bound_B + eps)*(CD123_B/(Leuk_B + eps) - CD34_CD123_B/(Leuk4_synapse_B + eps))
+  r8_kill123_B() k8_kill*active8_synapse_B/(CD123_free_B + CD123_bound_B + eps)*(CD123_B/(Leuk_B + eps) - CD38_CD123_B/(Leuk8_synapse_B + eps))
+
+
+  r4_kill123_BM() k4_kill*active4_synapse_BM/(CD123_free_BM + CD123_bound_BM + eps)*(CD123_BM/(Leuk_BM + eps) - CD34_CD123_BM/(Leuk4_synapse_BM + eps))
+  r8_kill123_BM() k8_kill*active8_synapse_BM/(CD123_free_BM + CD123_bound_BM + eps)*(CD123_BM/(Leuk_BM + eps) - CD38_CD123_BM/(Leuk8_synapse_BM + eps))
 
 
   r4_tox_syn_B() k4_tox*active4_synapse_B/(Leuk4_synapse_B + eps) # Stable form: Does not use nb
@@ -295,9 +305,9 @@ begin functions
   p_CD38_naive_BM() Tc8_naive_BM*rho3_init/(CD38_BM-CD38_CD123_BM)
 
 
-  p_CD123_free_B() Leuk_free_B*rho123_init/(CD123_B-CD34_CD123_B - CD38_CD123_B)
+  p_CD123_free_B() Leuk_free_B*rho123_init/(CD123_B-CD34_CD123_B - CD38_CD123_B) #check!
 
-  p_CD123_free_BM() Leuk_free_BM*rho123_init/(CD123_BM-CD34_CD123_BM - CD38_CD123_BM) 
+  p_CD123_free_BM() Leuk_free_BM*rho123_init/(CD123_BM-CD34_CD123_BM - CD38_CD123_BM) # check!
   
   # T cell expansion  
   r4_tcb_B() k_tcb*rho3_init*Tc4_free_act_B/(CD34_free_B + CD34_bound_B + eps)
@@ -322,16 +332,24 @@ begin functions
 
   r4_rev() k_migrate_BM*(thresh_rev^2/(cd34_bound_cell_BM()^2 + thresh_rev^2))
   r8_rev() k_migrate_BM*(thresh_rev^2/(cd38_bound_cell_BM()^2 + thresh_rev^2))
-	  
+
+
+  doserate() dose/duration*mass*NA*1e-6/molwt # Infusion rate [molec/day]
+	
+#	r_tox_Leuk() if(Leuk_bridge>=1, nb*(Leuk_term_synapse)/Leuk_bridge, 0)
+#	r_diss_Leuk() if(Leuk_bridge>=1, nb*Leuk_dead_synapse/Leuk_bridge, 0)
+#	Q_Taf_3f() if(CD3_free>=1, Tc_active/CD3_free, 0)
+#	f_k_tox() if(Tc_tot>=1, (CD3_tot/Tc_tot - nb)/(CD3_bound + CD3_free), 0) # Accounts for CD3 loss with T cell death
+  
 end functions
 begin reaction rules
 
 # ***T cell homeostasis from logistic growth***
-Tc4(loc~B,syn,act~0,ex~0,adh~0) <-> Tc4(loc~B,syn,act~0,ex~0,adh~0) + Tc4(loc~B,syn,act~0,ex~0,adh~0) k_tc4_log, k_tc4_log/(tc4_dens_B*V_B) 
-Tc8(loc~B,syn,act~0,ex~0,adh~0) <-> Tc8(loc~B,syn,act~0,ex~0,adh~0) + Tc8(loc~B,syn,act~0,ex~0,adh~0) k_tc8_log, k_tc8_log/(tc8_dens_B*V_B) 
-#
-Tc4(loc~BM,syn,act~0,ex~0,adh~0) <-> Tc4(loc~BM,syn,act~0,ex~0,adh~0) + Tc4(loc~BM,syn,act~0,ex~0,adh~0) k_tc4_log, k_tc4_log/(tc4_dens_BM*V_BM)
-Tc8(loc~BM,syn,act~0,ex~0,adh~0) <-> Tc8(loc~BM,syn,act~0,ex~0,adh~0) + Tc8(loc~BM,syn,act~0,ex~0,adh~0) k_tc8_log, k_tc8_log/(tc8_dens_BM*V_BM)
+Tc4(loc~B,syn,act~0,adh~0) <-> Tc4(loc~B,syn,act~0,adh~0) + Tc4(loc~B,syn,act~0,adh~0) k_tc4_log, k_tc4_log/(tc4_dens_B*V_B) 
+Tc8(loc~B,syn,act~0,adh~0) <-> Tc8(loc~B,syn,act~0,adh~0) + Tc8(loc~B,syn,act~0,adh~0) k_tc8_log, k_tc8_log/(tc8_dens_B*V_B) 
+
+Tc4(loc~BM,syn,act~0,adh~0) <-> Tc4(loc~BM,syn,act~0,adh~0) + Tc4(loc~BM,syn,act~0,adh~0) k_tc4_log, k_tc4_log/(tc4_dens_BM*V_BM)
+Tc8(loc~BM,syn,act~0,adh~0) <-> Tc8(loc~BM,syn,act~0,adh~0) + Tc8(loc~BM,syn,act~0,adh~0) k_tc8_log, k_tc8_log/(tc8_dens_BM*V_BM)
 
 # CD3 receptor production
 0-> CD34(loc~B,a) k_tc4_log*Tc4_naive_B*rho3_init
@@ -343,48 +361,38 @@ Tc8(loc~BM,syn,act~0,ex~0,adh~0) <-> Tc8(loc~BM,syn,act~0,ex~0,adh~0) + Tc8(loc~
 
 
 # CD3 receptor degradation
+# Slightly tricky rule that degrades both bound and unbound receptors 
+# but does not degrade drug if present (DeleteMolecules keyword causes only CD3 to be degraded).
 CD34(loc~B,a) -> 0 k_tc4_log/(tc4_dens_B*V_B)*Tc4_naive_B*p_CD34_naive_B()
 CD38(loc~B,a) -> 0 k_tc8_log/(tc8_dens_B*V_B)*Tc8_naive_B*p_CD38_naive_B()
 
 CD34(loc~B,a!1).A(cd3!1,cd123) -> A(cd3,cd123) k_tc4_log/(tc4_dens_B*V_B)*Tc4_naive_B*p_CD34_naive_B()
 CD38(loc~B,a!1).A(cd3!1,cd123) -> A(cd3,cd123) k_tc8_log/(tc8_dens_B*V_B)*Tc8_naive_B*p_CD38_naive_B()
 
+
 CD34(loc~BM,a) -> 0 k_tc4_log/(tc4_dens_BM*V_BM)*Tc4_naive_BM*p_CD34_naive_BM()
 CD38(loc~BM,a) -> 0 k_tc8_log/(tc8_dens_BM*V_BM)*Tc8_naive_BM*p_CD38_naive_BM()
+
+
 
 CD34(loc~BM,a!1).A(cd3!1,cd123) -> A(cd3,cd123) k_tc4_log/(tc4_dens_BM*V_BM)*Tc4_naive_BM*p_CD34_naive_BM()
 CD38(loc~BM,a!1).A(cd3!1,cd123) -> A(cd3,cd123) k_tc8_log/(tc8_dens_BM*V_BM)*Tc8_naive_BM*p_CD38_naive_BM()
  
-# ***Leuk homeostasis ***
-# Logistic growth
-Leuk(loc~B,syn) <-> Leuk(loc~B,syn) + Leuk(loc~B,syn) k_LeukB_log, k_LeukB_log/(Leuk_dens_B*V_B)
-Leuk(loc~BM,syn) <-> Leuk(loc~BM,syn) + Leuk(loc~BM,syn) k_LeukBM_log, k_LeukBM_log/(Leuk_dens_BM*V_BM)
-#  CD123 production
-0->CD123(loc~B,a) k_LeukB_log*Leuk_free_B*rho123_init
-0->CD123(loc~BM,a) k_LeukBM_log*Leuk_free_BM*rho123_init
+# ***Leuk homeostastis from logistic growth***
+Leuk(loc~B,syn) <-> Leuk(loc~B,syn) + Leuk(loc~B,syn) k_Leuk_log, k_Leuk_log/(Leuk_dens_B*V_B)
+Leuk(loc~BM,syn) <-> Leuk(loc~BM,syn) + Leuk(loc~BM,syn) k_Leuk_log, k_Leuk_log/(Leuk_dens_BM*V_BM)
+# CD123 production
+0->CD123(loc~B,a) k_Leuk_log*Leuk_free_B*rho123_init
+0->CD123(loc~BM,a) k_Leuk_log*Leuk_free_BM*rho123_init
 # CD123 degradation
-CD123(loc~B,a) -> 0 k_LeukB_log/(Leuk_dens_B*V_B)*Leuk_free_B*p_CD123_free_B()
-CD123(loc~B,a!1).A(cd123!1,cd3) -> A(cd123,cd3) k_LeukB_log/(Leuk_dens_B*V_B)*Leuk_free_B*p_CD123_free_B()
-CD123(loc~BM,a) -> 0 k_LeukBM_log/(Leuk_dens_BM*V_BM)*Leuk_free_BM*p_CD123_free_BM()
-CD123(loc~BM,a!1).A(cd123!1,cd3) -> A(cd123,cd3) k_LeukBM_log/(Leuk_dens_BM*V_BM)*Leuk_free_BM*p_CD123_free_BM()
-
-## Simple growth
-#0 <-> Leuk(loc~B,syn) k_Leuk_syn_B, k_Leuk_deg_B
-#0 <-> Leuk(loc~BM,syn) k_Leuk_syn_BM, k_Leuk_deg_BM
-#
-## Associated CD123 production and degradation
-## Free receptors
-#0 <-> CD123(loc~B,a) k_Leuk_syn_B*rho123_init, k_Leuk_deg_B*Leuk_free_B*p_CD123_free_B()
-#0 <-> CD123(loc~BM,a) k_Leuk_syn_BM*rho123_init, k_Leuk_deg_BM*Leuk_free_BM*p_CD123_free_BM()
-#
-## Degradation of drug-bound receptors
-#CD123(loc~B,a!1).A(cd123!1,cd3) -> A(cd123,cd3) k_Leuk_deg_B*Leuk_free_B*p_CD123_free_B()
-#CD123(loc~BM,a!1).A(cd123!1,cd3) -> A(cd123,cd3) k_Leuk_deg_BM*Leuk_free_BM*p_CD123_free_BM()
- 
+CD123(loc~B,a) -> 0 k_Leuk_log/(Leuk_dens_B*V_B)*Leuk_free_B*p_CD123_free_B()
+CD123(loc~B,a!1).A(cd123!1,cd3) -> A(cd123,cd3) k_Leuk_log/(Leuk_dens_B*V_B)*Leuk_free_B*p_CD123_free_B()
+CD123(loc~BM,a) -> 0 k_Leuk_log/(Leuk_dens_BM*V_BM)*Leuk_free_BM*p_CD123_free_BM()
+CD123(loc~BM,a!1).A(cd123!1,cd3) -> A(cd123,cd3) k_Leuk_log/(Leuk_dens_BM*V_BM)*Leuk_free_BM*p_CD123_free_BM()
 
 # ***Drug PK ***
 #  Infusion into blood
-0 -> A(loc~B,cd3,cd123) doserate 
+0 -> A(loc~B,cd3,cd123) doserate() 
 # Clearance from blood
 A(loc~B,cd3,cd123) -> 0 CL/V_B
 #  Distribution
@@ -433,45 +441,47 @@ CD38(loc~BM,a!1).A(cd3!1,cd123) + CD123(loc~BM,a) -> CD38(loc~BM,a!1).A(cd3!1,cd
 Tc4(syn!+,act~0) -> Tc4(syn!+,act~1) k4_act
 Tc8(syn!+,act~0) -> Tc8(syn!+,act~1) k8_act
 
-# ** T cell exhaustion ***
-Tc4(syn,act~1,ex~0) -> Tc4(syn,act~1,ex~1) k4_ex
-Tc8(syn,act~1,ex~0) -> Tc8(syn,act~1,ex~1) k8_ex
-
-
 # *** Killing ***
 # First-order loss of synapses and associated receptors 
-Tc4(loc~B,syn!1,act~1,ex~0).Leuk(syn!1) -> Tc4(loc~B,syn,act~1,ex~0) k4_kill 
-Tc8(loc~B,syn!1,act~1,ex~0).Leuk(syn!1) -> Tc8(loc~B,syn,act~1,ex~0) k8_kill 
+Tc4(loc~B,syn!1,act~1).Leuk(syn!1) -> Tc4(loc~B,syn,act~1) k4_kill 
+Tc8(loc~B,syn!1,act~1).Leuk(syn!1) -> Tc8(loc~B,syn,act~1) k8_kill 
 
-Tc4(loc~BM,syn!1,act~1,ex~0).Leuk(syn!1) -> Tc4(loc~BM,syn,act~1,ex~0) k4_kill
-Tc8(loc~BM,syn!1,act~1,ex~0).Leuk(syn!1) -> Tc8(loc~BM,syn,act~1,ex~0) k8_kill
+Tc4(loc~BM,syn!1,act~1).Leuk(syn!1) -> Tc4(loc~BM,syn,act~1) k4_kill
+Tc8(loc~BM,syn!1,act~1).Leuk(syn!1) -> Tc8(loc~BM,syn,act~1) k8_kill
+
 
 # Loss of bridged CD123 
 CD34(loc~B,a!1).A(cd3!1,cd123!2).CD123(a!2) -> CD34(loc~B,a) (1-b3())*r4_kill_B()
 CD38(loc~B,a!1).A(cd3!1,cd123!2).CD123(a!2) -> CD38(loc~B,a) (1-b3())*r8_kill_B()
 
+
 CD34(loc~B,a!1).A(cd3!1,cd123!2).CD123(a!2) -> CD34(loc~B,a!1).A(cd3!1,cd123) b3()*r4_kill_B()
 CD38(loc~B,a!1).A(cd3!1,cd123!2).CD123(a!2) -> CD38(loc~B,a!1).A(cd3!1,cd123) b3()*r8_kill_B()
 
+
 CD34(loc~BM,a!1).A(cd3!1,cd123!2).CD123(a!2) -> CD34(loc~BM,a) (1-b3())*r4_kill_BM()
 CD38(loc~BM,a!1).A(cd3!1,cd123!2).CD123(a!2) -> CD38(loc~BM,a) (1-b3())*r8_kill_BM()
+
 
 CD34(loc~BM,a!1).A(cd3!1,cd123!2).CD123(a!2) -> CD34(loc~BM,a!1).A(cd3!1,cd123) b3()*r4_kill_BM()
 CD38(loc~BM,a!1).A(cd3!1,cd123!2).CD123(a!2) -> CD38(loc~BM,a!1).A(cd3!1,cd123) b3()*r8_kill_BM()
 
 
 # Treating compartments separately when handling non-bridged CD123
-A(loc~B,cd3,cd123!1).CD123(a!1) -> 0 r4_kill123_B() 
-A(loc~B,cd3,cd123!1).CD123(a!1) -> 0 r8_kill123_B() 
+A(loc~B,cd3,cd123!1).CD123(a!1) -> 0 r4_kill123_B() # check!
+A(loc~B,cd3,cd123!1).CD123(a!1) -> 0 r8_kill123_B() # check!
 
-A(loc~BM,cd3,cd123!1).CD123(a!1) -> 0 r4_kill123_BM() 
-A(loc~BM,cd3,cd123!1).CD123(a!1) -> 0 r8_kill123_BM() 
+A(loc~BM,cd3,cd123!1).CD123(a!1) -> 0 r4_kill123_BM() # check!
+A(loc~BM,cd3,cd123!1).CD123(a!1) -> 0 r8_kill123_BM() # check!
 
-CD123(loc~B,a) -> 0 r4_kill123_B() 
-CD123(loc~B,a) -> 0 r8_kill123_B() 
 
-CD123(loc~BM,a) -> 0 r4_kill123_BM() 
-CD123(loc~BM,a) -> 0 r8_kill123_BM() 
+
+CD123(loc~B,a) -> 0 r4_kill123_B() # check!
+CD123(loc~B,a) -> 0 r8_kill123_B() # check!
+
+
+CD123(loc~BM,a) -> 0 r4_kill123_BM() # check!
+CD123(loc~BM,a) -> 0 r8_kill123_BM() # check!
 
 
 
@@ -543,10 +553,9 @@ CD38(loc~BM,a) -> 0 r8_tox_BM()
 # ***T cell expansion***
 # Only free active T cells replicate
 # New CD3 comes from both bound and free CD3, so replication occurs even when CD3 is saturated 
-Tc4(loc~B,syn,act~1,ex~0) -> Tc4(loc~B,syn,act~1,ex~0) + Tc4(loc~B,syn,act~1,ex~0,adh~0) k_tcb
-Tc8(loc~B,syn,act~1,ex~0) -> Tc8(loc~B,syn,act~1,ex~0) + Tc8(loc~B,syn,act~1,ex~0,adh~0) k_tcb
-Tc4(loc~B,syn,act~1,ex~1) -> Tc4(loc~B,syn,act~1,ex~1) + Tc4(loc~B,syn,act~1,ex~1,adh~0) k_tcb
-Tc8(loc~B,syn,act~1,ex~1) -> Tc8(loc~B,syn,act~1,ex~1) + Tc8(loc~B,syn,act~1,ex~1,adh~0) k_tcb
+Tc4(loc~B,syn,act~1) -> Tc4(loc~B,syn,act~1) + Tc4(loc~B,syn,act~1,adh~0) k_tcb
+Tc8(loc~B,syn,act~1) -> Tc8(loc~B,syn,act~1) + Tc8(loc~B,syn,act~1,adh~0) k_tcb
+
 
 
 CD34(loc~B,a) -> CD34(loc~B,a) + CD34(loc~B,a) r4_tcb_B()
@@ -557,10 +566,8 @@ CD34(loc~B,a!1).A(cd3!1,cd123) -> CD34(loc~B,a!1).A(cd3!1,cd123) + CD34(loc~B,a)
 CD38(loc~B,a!1).A(cd3!1,cd123) -> CD38(loc~B,a!1).A(cd3!1,cd123) + CD38(loc~B,a) r8_tcb_B()
 
 
-Tc4(loc~BM,syn,act~1,ex~0) -> Tc4(loc~BM,syn,act~1,ex~0) + Tc4(loc~BM,syn,act~1,ex~0,adh~0) k_tcb
-Tc8(loc~BM,syn,act~1,ex~0) -> Tc8(loc~BM,syn,act~1,ex~0) + Tc8(loc~BM,syn,act~1,ex~0,adh~0) k_tcb
-Tc4(loc~BM,syn,act~1,ex~1) -> Tc4(loc~BM,syn,act~1,ex~1) + Tc4(loc~BM,syn,act~1,ex~1,adh~0) k_tcb
-Tc8(loc~BM,syn,act~1,ex~1) -> Tc8(loc~BM,syn,act~1,ex~1) + Tc8(loc~BM,syn,act~1,ex~1,adh~0) k_tcb
+Tc4(loc~BM,syn,act~1) -> Tc4(loc~BM,syn,act~1) + Tc4(loc~BM,syn,act~1,adh~0) k_tcb
+Tc8(loc~BM,syn,act~1) -> Tc8(loc~BM,syn,act~1) + Tc8(loc~BM,syn,act~1,adh~0) k_tcb
 
 
 CD34(loc~BM,a) -> CD34(loc~BM,a) + CD34(loc~BM,a) r4_tcb_BM()
@@ -569,6 +576,7 @@ CD38(loc~BM,a) -> CD38(loc~BM,a) + CD38(loc~BM,a) r8_tcb_BM()
 
 CD34(loc~BM,a!1).A(cd3!1,cd123) -> CD34(loc~BM,a!1).A(cd3!1,cd123) + CD34(loc~BM,a) r4_tcb_BM()
 CD38(loc~BM,a!1).A(cd3!1,cd123) -> CD38(loc~BM,a!1).A(cd3!1,cd123) + CD38(loc~BM,a) r8_tcb_BM()
+
 
 
 # ***T-cell trafficking; we send them to BM!***
@@ -623,37 +631,36 @@ CD38(a!1).A(cd3!1,cd123) -> 0 ki3
 
 #cytokine reactions
 
-# IFNg secretion and degradation
-Tc4(loc~B,act~1,ex~0) -> Tc4(loc~B,act~1,ex~0) + IFNg(loc~B) kf_ifng
-Tc8(loc~B,act~1,ex~0) -> Tc8(loc~B,act~1,ex~0) + IFNg(loc~B) kf_ifng
+# IFNg release and degradation/absorption; both CD4+ and CD8+ T-cells release and absorb IL2
+Tc4(loc~B,act~1) -> Tc4(loc~B,act~1) + IFNg(loc~B) kf_ifng
+Tc8(loc~B,act~1) -> Tc8(loc~B,act~1) + IFNg(loc~B) kf_ifng
 IFNg(loc~B) -> 0  kr_ifng
 
-Tc4(loc~BM,act~1,ex~0) -> Tc4(loc~BM,act~1,ex~0) + IFNg(loc~BM) kf_ifng
-Tc8(loc~BM,act~1,ex~0) -> Tc8(loc~BM,act~1,ex~0) + IFNg(loc~BM) kf_ifng
+Tc4(loc~BM,act~1) -> Tc4(loc~BM,act~1) + IFNg(loc~BM) kf_ifng
+Tc8(loc~BM,act~1) -> Tc8(loc~BM,act~1) + IFNg(loc~BM) kf_ifng
 IFNg(loc~BM) -> 0  kr_ifng
-
-# IL2 secretion and degradation
-Tc4(loc~B,act~1,ex~0) -> Tc4(loc~B,act~1,ex~0) + IL2(loc~B) kf_il2
-Tc8(loc~B,act~1,ex~0) -> Tc8(loc~B,act~1,ex~0) + IL2(loc~B) kf_il2
+ 
+Tc4(loc~B,act~1) -> Tc4(loc~B,act~1) + IL2(loc~B) kf_il2
+Tc8(loc~B,act~1) -> Tc8(loc~B,act~1) + IL2(loc~B) kf_il2
 IL2(loc~B) -> 0  kr_il2
 
-Tc4(loc~BM,act~1,ex~0) -> Tc4(loc~BM,act~1,ex~0) + IL2(loc~BM) kf_il2
-Tc8(loc~BM,act~1,ex~0) -> Tc8(loc~BM,act~1,ex~0) + IL2(loc~BM) kf_il2
+Tc4(loc~BM,act~1) -> Tc4(loc~BM,act~1) + IL2(loc~BM) kf_il2
+Tc8(loc~BM,act~1) -> Tc8(loc~BM,act~1) + IL2(loc~BM) kf_il2
 IL2(loc~BM) -> 0  kr_il2
 
-# IL2 consumption by T cells -- not included for now
-#IL2(loc~B) -> 0 kc_il2*(Tc4_free_act_B+Tc8_free_act_B)/(Kc_il2 + IL2)
-#IL2(loc~BM) -> 0 kc_il2*(Tc4_free_act_BM+Tc8_free_act_BM)/(Kc_il2 + IL2)
-
-
-# IL6 secretion and degradation
-Tc4(loc~B,act~1,ex~0) -> Tc4(loc~B,act~1,ex~0) + IL6(loc~B) kf_il6
-Tc8(loc~B,act~1,ex~0) -> Tc8(loc~B,act~1,ex~0) + IL6(loc~B) kf_il6
+Tc4(loc~B,act~1) -> Tc4(loc~B,act~1) + IL6(loc~B) kf_il6
+Tc8(loc~B,act~1) -> Tc8(loc~B,act~1) + IL6(loc~B) kf_il6
 IL6(loc~B) -> 0  kr_il6
 
-Tc4(loc~BM,act~1,ex~0) -> Tc4(loc~BM,act~1,ex~0) + IL6(loc~BM) kf_il6
-Tc8(loc~BM,act~1,ex~0) -> Tc8(loc~BM,act~1,ex~0) + IL6(loc~BM) kf_il6
+
+Tc4(loc~BM,act~1) -> Tc4(loc~BM,act~1) + IL6(loc~BM) kf_il6
+Tc8(loc~BM,act~1) -> Tc8(loc~BM,act~1) + IL6(loc~BM) kf_il6
 IL6(loc~BM) -> 0  kr_il6
+	
+Tc4(loc~B,act~1) -> Tc4(loc~B,act~1) + IL10(loc~B) kf_il10
+Tc8(loc~B,act~1) -> Tc8(loc~B,act~1) + IL10(loc~B) kf_il10
+IL10(loc~B) -> 0  kr_il10
+
 
 # IL10 secretion by synapsed CD123 cells and degradation
 Leuk(loc~B,syn!+) -> Leuk(loc~B,syn!+) + IL10(loc~B) kf_il10
@@ -666,42 +673,39 @@ IL10(loc~BM) -> 0  kr_il10
 end reaction rules
 end model
 
+setParameter("CL",8.090273e+03)
+setParameter("Q",4.751371e+03)
+setParameter("k_tc4_log",4.215109e-01)
+setParameter("k_tc8_log",1.149900e+00)
+setParameter("k_Leuk_log",3.163712e+00)
+setParameter("kf",3.963862e+00)
+setParameter("nb",1.701494e+01)
+setParameter("k4_act",1.645184e+02)
+setParameter("k8_act",1.962270e+02)
+setParameter("k4_kill",7.955820e+00)
+setParameter("k8_kill",1.463852e+00)
+setParameter("k4_tox",6.160412e-02)
+setParameter("k8_tox",9.336663e-02)
+setParameter("kr",2.979083e+03)
+setParameter("k_adh",1.995005e+02)
+setParameter("k_migrate_B",1.821421e+04)
+setParameter("k_migrate_BM",7.319307e-01)
+setParameter("kf_ifng",10.996551e+03)
+setParameter("kr_ifng",80.242637e-01)
+setParameter("kf_il2",4.844722e+01)
+setParameter("kr_il2",7.864971e-02)
+setParameter("kf_il6",3.794281e+01)
+setParameter("kr_il6",8.930200e-02)
+setParameter("kf_il10",8.019101e+02)
+setParameter("kr_il10",18.609290e-01)
 
 generate_network({overwrite=>1});
 
 writeSBML();
 
-setParameter("CL",3.832473e+03)
-setParameter("Q",5.767320e+03)
-setParameter("k_tc4_log",3.603764e-01)
-setParameter("k_tc8_log",2.575366e+00)
-setParameter("k_LeukB_log",0.604855e+01)
-setParameter("k_LeukBM_log",2.586583e+01)
-setParameter("kf",4.358954e+00)
-setParameter("nb",1.314861e+01)
-setParameter("k4_act",1.586623e+02)
-setParameter("k8_act",2.481135e+02)
-setParameter("k_tcb",5.3e-2)
-setParameter("k4_ex",8.164408e-02)
-setParameter("k8_ex",11.166727e-02)
-setParameter("k4_kill",1.552178e+01)
-setParameter("k8_kill",3.309275e+01)
-setParameter("k4_tox",1.232082e-01)
-setParameter("k8_tox",1.232634e-01)
-setParameter("k_adh",2.747248e+02)
-setParameter("k_migrate_B",8.610515e+03)
-setParameter("k_migrate_BM",4.214208e-01)
-setParameter("kf_ifng",9.798275e+05)
-setParameter("kr_ifng",2.174206e+01)
-setParameter("kf_il2",1.138883e+05)
-setParameter("kr_il2",10.095219e+00)
-setParameter("kf_il6",2.140300e+06)
-setParameter("kr_il6",2.399406e+02)
-setParameter("kf_il10",36.600955e+05)
-setParameter("kr_il10",0.530465e+01)
-
 setParameter("dose",0.1)
 simulate({method=>"ode",t_end=>1/24,n_steps=>20,print_functions=>1,rtol=>1e-12,atol=>1e-12})
+
 setParameter("dose",0)
 simulate({method=>"ode",t_end=>7,continue=>1,\
           n_steps=>140,\
@@ -709,6 +713,7 @@ simulate({method=>"ode",t_end=>7,continue=>1,\
 
 setParameter("dose",1.0)
 simulate({method=>"ode",t_end=>169/24,n_steps=>20, continue=>1,print_functions=>1,rtol=>1e-12,atol=>1e-12})
+
 setParameter("dose",0)
 simulate({method=>"ode",t_end=>14,continue=>1,\
           n_steps=>140,\
@@ -716,9 +721,9 @@ simulate({method=>"ode",t_end=>14,continue=>1,\
 
 setParameter("dose",5.0)
 simulate({method=>"ode",t_end=>337/24,n_steps=>20, continue=>1,print_functions=>1,rtol=>1e-12,atol=>1e-12})
+
 setParameter("dose",0)
 simulate({method=>"ode",t_end=>21,continue=>1,\
           n_steps=>140,\
           print_functions=>1,rtol=>1e-12,atol=>1e-12})    
-
 

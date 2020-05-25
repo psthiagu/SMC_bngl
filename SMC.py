@@ -56,9 +56,9 @@ class SMC:
         # resetting is not implemented yet
         # e.g. self.Simulator.reset_simulator()
         # Not implemented: self.Simulator.reset_simulator(["stuff"])
-        return check
+        return check, res
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
-    mc_res = S.run()
-    print(mc_res)
+    mc_res, res = S.run()
+    #print(mc_res)
