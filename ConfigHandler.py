@@ -117,10 +117,12 @@ class ConfigHandler:
                     if stage_dict.get("start",None) is None:
                         # assuming we are past stage 0
                         start = end
-                        end = stage_dict.get("end")
+                        # TODO: fail if this is not given
+                        sim_len = float(stage_dict.get("sim_len"))
+                        end   = start + sim_len
                     else:
                         start = stage_dict.get("start", 0)
-                        end   = stage_dict.get("end", 100)
+                        end = stage_dict.get("end", 100)
                     start, end, num = self.eval_if_string(start, end, num)
                     print("simulating start {}, end {}, num pts {}".format(start, end, num))
                     if ctr > 0:

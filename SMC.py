@@ -50,15 +50,16 @@ class SMC:
         # that was given in the YAML file.
         res = self.Simulator.simulate()
         print(res.shape, res["time"])
-        self.MC = ModelChecker(self.formulas)
-        check = self.MC.modelcheck(res)
+        print(res)
+        # self.MC = ModelChecker(self.formulas)
+        # check = self.MC.modelcheck(res)
         # TODO: reset simulator, note that specific value 
         # resetting is not implemented yet
         # e.g. self.Simulator.reset_simulator()
         # Not implemented: self.Simulator.reset_simulator(["stuff"])
-        return check, res
+        return res
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
-    mc_res, res = S.run()
+    res = S.run()
     #print(mc_res)

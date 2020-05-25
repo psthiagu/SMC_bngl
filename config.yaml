@@ -5,9 +5,11 @@ files:
   xml_file: "comp31_sbml.xml"
   bngl_file: "comp31.bngl"
 estimation_options:
-  est_parms: ["k_LeukB_log","k_LeukBM_log", "kf", "nb", "k4_act","k8_act", "k_tcb", "k4_ex", "k8_ex", "k4_kill","k8_kill", 
-              "k4_tox", "k8_tox", "k_adh", "k_migrate_B", "k_migrate_BM", "kf_ifng", "kr_ifng", "kf_il2", "kr_il2", 
-              "kf_il6", "kr_il6", "kf_il10", "kr_il10"]
+  est_parms: ["kf", "nb", "k4_act","k8_act", 
+      "k_tcb", "k4_kill","k8_kill","k4_tox", 
+      "k8_tox", "k_adh", "k_migrate_B", "k_migrate_BM", 
+      "kf_ifng", "kr_ifng", "kf_il2", "kr_il2", "kf_il6", 
+      "kr_il6", "kf_il10", "kr_il10"]
   observables: ["dose", "CD34(a,loc~B)", "[S4]"]
 simulation_options:
   # type: "from_python"
