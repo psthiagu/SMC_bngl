@@ -60,7 +60,6 @@ class SMC:
         # set the values 
         self.Simulator.set_values(values=new_vals)
         new_res = self.Simulator.simulate()
-        import IPython;IPython.embed()
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
