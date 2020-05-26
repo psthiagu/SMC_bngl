@@ -6,7 +6,7 @@ Created on Tue Mar 3 11:37:30 2020
 @author: sinan
 """ 
 
-import yaml, sys, argparse, numpy
+import yaml, sys, argparse
 import training2formula as t2f  
 from simulate import SMCSimulator
 from ConfigHandler import ConfigHandler
@@ -52,19 +52,9 @@ class SMC:
         # Now we need to check the results
         self.MC = ModelChecker(self.formulas)
         check = self.MC.modelcheck(res)
-        # let's get the initial values +- %5
-        new_vals = {}
-        for fid,init_id in self.Simulator.init_ids:
-            init_val = self.Simulator.simulator[init_id]
-            delta = init_val * 0.05 # 5% of the initial value
-            val_sample = numpy.random.uniform(init_val-delta, high=init_val+delta)
-            new_vals[fid] = val_sample # adding new value to dictionary
-        # parameter values
-        for param in self.configHandler.est_parms:
-            pval = self.Simulator.simulator[param]
-            delta = pval * 0.05 # 5% of the current parameter value
-            val_sample = numpy.random.uniform(pval-delta, high=pval+delta)
-            new_vals[param] = val_sample
+        # sample new values
+        per = 0.05 # %5 
+        new_vals = self.Simulator.sample_vals(per)
         # we first reset to the initial state
         self.Simulator.reset_simulator()
         # set the values 

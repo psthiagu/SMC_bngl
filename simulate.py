@@ -251,6 +251,22 @@ class SMCSimulator:
                 # res.colnames = self.rev_obs_list
         return res
 
+    def sample_vals(self, per):
+        # let's get the initial values +- %5
+        new_vals = {}
+        for fid,init_id in self.init_ids:
+            init_val = self.simulator[init_id]
+            delta = init_val * per # 5% of the initial value
+            val_sample = np.random.uniform(init_val-delta, high=init_val+delta)
+            new_vals[fid] = val_sample # adding new value to dictionary
+        # parameter values
+        for param in self.est_parms:
+            pval = self.simulator[param]
+            delta = pval * 0.05 # 5% of the current parameter value
+            val_sample = np.random.uniform(pval-delta, high=pval+delta)
+            new_vals[param] = val_sample
+        return new_vals
+
     def set_values(self, values):
         for name in values:
             self.simulator[name] = values[name]
