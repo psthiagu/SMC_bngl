@@ -52,6 +52,11 @@ class SMC:
         # Now we need to check the results
         self.MC = ModelChecker(self.formulas)
         check = self.MC.modelcheck(res)
+        # Example code for pulling multiple trajectories
+        results = []
+        for i in range(10):
+            res = self.Simulator.get_new_trajectory()
+            results.append(res)
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
