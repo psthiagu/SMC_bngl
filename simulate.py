@@ -288,7 +288,16 @@ class SMCSimulator:
             self.reset_simulator()
             # set the values 
             self.set_values(values=new_vals)
-            res = self.simulate()
+            getting_results = True
+            ctr = 0
+            while getting_results:
+                try:
+                    res = self.simulate()
+                    getting_results = False
+                except:
+                    ctr += 1
+                if ctr == 10:
+                    print("tried resampling 10 times and the simulator doesn't work")
         else:
             res = self.simulate()
             self.simulated = True
