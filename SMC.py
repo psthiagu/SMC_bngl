@@ -48,18 +48,10 @@ class SMC:
         self.Simulator = SMCSimulator(self.dic_formulas, handler=self.configHandler)
         # Note, self.configHandler has all the estimation stuff 
         # that was given in the YAML file.
-        res = self.Simulator.simulate()
+        res = self.Simulator.get_new_trajectory()
         # Now we need to check the results
         self.MC = ModelChecker(self.formulas)
         check = self.MC.modelcheck(res)
-        # sample new values
-        per = 0.05 # %5 
-        new_vals = self.Simulator.sample_vals(per)
-        # we first reset to the initial state
-        self.Simulator.reset_simulator()
-        # set the values 
-        self.Simulator.set_values(values=new_vals)
-        new_res = self.Simulator.simulate()
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)

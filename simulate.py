@@ -15,6 +15,7 @@ from ConfigHandler import ConfigHandler
 
 class SMCSimulator:
     def __init__(self, dic_formulas, config_file=None, handler=None):
+        self.simulated = False
         if config_file is not None:
             # Parse config file here
             self.configHandler = ConfigHandler(config_file)
@@ -278,6 +279,20 @@ class SMCSimulator:
             # TODO: Only reset values here
             raise NotImplemented
 
+    def get_new_trajectory(self):
+        if self.simulated:
+            # sample new values
+            per = 0.05 # %5 
+            new_vals = self.sample_vals(per)
+            # we first reset to the initial state
+            self.reset_simulator()
+            # set the values 
+            self.set_values(values=new_vals)
+            res = self.simulate()
+        else:
+            res = self.simulate()
+            self.simulated = True
+        return res
     
 if __name__ == '__main__':
     t = t2f.Train2Form(fpath="data",w=0.1)
