@@ -233,6 +233,12 @@ class SMCSimulator:
         obs_index = {}
         for o in obs:
             obs_index[o] =  P.index(o)        
+
+        self.init_ids = []
+        for init_id in rr.getFloatingSpeciesInitialConcentrationIds():
+            iid = init_id.replace("init([","")
+            iid = iid.replace("])", "")
+            self.init_ids.append((iid,init_id))
         
         return (rr, species_index, parms_index, obs_index)
 
@@ -244,6 +250,10 @@ class SMCSimulator:
                 res = np.array(res, dtype=new_dtype)
                 # res.colnames = self.rev_obs_list
         return res
+
+    def set_values(self, values):
+        for name in values:
+            self.simulator[name] = values[name]
 
     def reset_simulator(self, values=None):
         if values is None:
