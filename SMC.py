@@ -11,6 +11,7 @@ import training2formula as t2f
 from simulate import SMCSimulator
 from ConfigHandler import ConfigHandler
 from modelcheck import ModelChecker
+from hyptester import HypothesisTester
 
 class SMC:
     def __init__(self, config_file=None, cmdline=False):
@@ -40,6 +41,17 @@ class SMC:
         self.parser = parser
         self.args = self.parser.parse_args()
 
+    def prune_result(self, mc_res):
+        """
+        First throw away some useless parts of the keys of mc_res
+        
+        """
+        mc_res_prune = {}
+        for v in list(mc_res.keys()):
+            mc_res_prune[(v[1], v[2])] =  mc_res[v]
+        return mc_res_prune
+
+
     def run(self):
         # TODO: What else do we need from data_options? any tolerances?
         # any other relevant options that needs passed in? 
@@ -52,13 +64,48 @@ class SMC:
         # Now we need to check the results
         self.MC = ModelChecker(self.formulas)
         check = self.MC.modelcheck(res)
-        # Example code for pulling multiple trajectories
-        results = []
-        for i in range(10):
+        # need to remove some unnecessary keys
+        mc_res = self.prune_result(check)
+        n = len(mc_res)
+        # determine hypothesis parameters
+        alpha = 0.1
+        alpha = float(alpha)/float(n)
+        prob=0.9
+        beta=0.1
+        delta=0.05
+        # the tester
+        ht = HypothesisTester(prob, alpha, beta, delta)
+        current = list(mc_res.keys())
+        Samples = {}
+        NH = []
+        AH = []
+        for v in current:
+            Samples[v] = []
+        
+        print("#############################")
+        while len(current) > 0:
+            print("Currently there are {} things left".format(len(current)))
             res = self.Simulator.get_new_trajectory()
-            results.append(res)
+            check = self.MC.modelcheck(res)
+            mc_res = self.prune_result(check)
+            for v in current:
+                Samples[v].append(mc_res[v])
+                test_res = ht.test(Samples[v])
+                if test_res == 0:
+                    NH.append(v)
+                    current.remove(v)
+                elif test_res == 1:
+                    AH.append(v)
+                    current.remove(v)
+            print("Current null hyp: {}".format(NH))
+            print("Current alt hyp: {}".format(AH))
+            print("left over formulas: {}".format(current))
+            print("#############################")
+        J = float(len(NH))/float(n)
+        # We need to determine what to do given NH/AH/J 
+        return NH, AH, J
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
-    res = S.run()
+    NH, AH, J = S.run()
     #print(mc_res)

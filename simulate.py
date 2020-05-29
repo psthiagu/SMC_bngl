@@ -281,11 +281,11 @@ class SMCSimulator:
 
     def get_new_trajectory(self):
         if self.simulated:
+            # we first reset to the initial state
+            self.reset_simulator()
             # sample new values
             per = 0.05 # %5 
             new_vals = self.sample_vals(per)
-            # we first reset to the initial state
-            self.reset_simulator()
             # set the values 
             self.set_values(values=new_vals)
             getting_results = True
