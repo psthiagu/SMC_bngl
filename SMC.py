@@ -30,6 +30,20 @@ class SMC:
             self.configHandler = ConfigHandler(self.args.config_file)
         else:
             self.configHandler = ConfigHandler(config_file)
+        # TODO: What else do we need from data_options? any tolerances?
+        # any other relevant options that needs passed in? 
+        self.t2form = t2f.Train2Form(handler=self.configHandler) 
+        self.formulas, self.dic_formulas = self.t2form.run()
+        self.Simulator = SMCSimulator(self.dic_formulas, handler=self.configHandler)
+        self.MC = ModelChecker(self.formulas)
+        # determine hypothesis parameters
+        alpha = 0.1
+        alpha = float(alpha)/float(n)
+        prob=0.9
+        beta=0.1
+        delta=0.05
+        # the tester
+        ht = HypothesisTester(prob, alpha, beta, delta)
 
     def _parse_args(self):
         '''
@@ -53,28 +67,14 @@ class SMC:
 
 
     def run(self):
-        # TODO: What else do we need from data_options? any tolerances?
-        # any other relevant options that needs passed in? 
-        self.t2form = t2f.Train2Form(handler=self.configHandler) 
-        self.formulas, self.dic_formulas = self.t2form.run()
-        self.Simulator = SMCSimulator(self.dic_formulas, handler=self.configHandler)
         # Note, self.configHandler has all the estimation stuff 
         # that was given in the YAML file.
         res = self.Simulator.get_new_trajectory()
         # Now we need to check the results
-        self.MC = ModelChecker(self.formulas)
         check = self.MC.modelcheck(res)
         # need to remove some unnecessary keys
         mc_res = self.prune_result(check)
         n = len(mc_res)
-        # determine hypothesis parameters
-        alpha = 0.1
-        alpha = float(alpha)/float(n)
-        prob=0.9
-        beta=0.1
-        delta=0.05
-        # the tester
-        ht = HypothesisTester(prob, alpha, beta, delta)
         current = list(mc_res.keys())
         Samples = {}
         NH = []
