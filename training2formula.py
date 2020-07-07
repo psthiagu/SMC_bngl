@@ -97,7 +97,7 @@ class Train2Form:
             df = pd.read_csv(fpath)
             c = [0]
             # The first column containing the indices -if present- is dropped.
-            df.drop(df.columns[c],axis=1, inplace=True)
+            # df.drop(df.columns[c],axis=1, inplace=True)
             C = df.columns.tolist()
             obs = C[-1]
             T.extend(df['day'].tolist())
@@ -257,6 +257,7 @@ class Train2Form:
         time , dic = self.all_times(files)
         time = [float(t) for t in time]
         df_data = self.data(files, dic, time) 
+        self.configHandler._data = df_data
         w = self.w 
         tol = self.tolerance(df_data, w)    
         formulas, formulas_Obs = self.trainingdata2formulas(df_data, tol)

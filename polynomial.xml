@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by BioNetGen 2.5.0  -->
+<sbml xmlns="http://www.sbml.org/sbml/level2/version3" level="2" version="3">
+  <model id="polynomial">
+    <listOfCompartments>
+      <compartment id="cell" size="1"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S1" compartment="cell" initialConcentration="0" name="counter()"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <!-- Independent variables -->
+      <parameter id="a" value="1"/>
+      <parameter id="b" value="1"/>
+      <parameter id="c" value="1"/>
+      <parameter id="d" value="1"/>
+      <parameter id="e" value="1"/>
+      <parameter id="f" value="1"/>
+      <parameter id="g" value="1"/>
+      <parameter id="_rateLaw1" value="1"/>
+      <!-- Observables -->
+      <parameter id="x" constant="false"/>
+      <!-- Global functions -->
+      <parameter id="y1" constant="false"/>
+      <parameter id="y2" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <!-- Observables -->
+      <assignmentRule variable="x">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <plus/>
+              <cn> 0 </cn>
+              <ci> S1 </ci>
+            </apply>
+          </math>
+      </assignmentRule>
+      <!-- Global functions -->
+      <assignmentRule variable="y1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <apply>
+                  <minus/>
+                  <apply>
+                    <times/>
+                    <ci> a </ci>
+                    <apply>
+                      <power/>
+                      <ci> x </ci>
+                      <cn> 4 </cn>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <ci> b </ci>
+                    <apply>
+                      <power/>
+                      <ci> x </ci>
+                      <cn> 3 </cn>
+                    </apply>
+                  </apply>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> c </ci>
+                  <apply>
+                    <power/>
+                    <ci> x </ci>
+                    <cn> 2 </cn>
+                  </apply>
+                </apply>
+              </apply>
+              <apply>
+                <times/>
+                <ci> d </ci>
+                <ci> x </ci>
+              </apply>
+            </apply>
+            <ci> e </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="y2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <apply>
+                  <minus/>
+                  <apply>
+                    <times/>
+                    <ci> g </ci>
+                    <apply>
+                      <power/>
+                      <ci> x </ci>
+                      <cn> 4 </cn>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <ci> f </ci>
+                    <apply>
+                      <power/>
+                      <ci> x </ci>
+                      <cn> 3 </cn>
+                    </apply>
+                  </apply>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> e </ci>
+                  <apply>
+                    <power/>
+                    <ci> x </ci>
+                    <cn> 2 </cn>
+                  </apply>
+                </apply>
+              </apply>
+              <apply>
+                <times/>
+                <ci> d </ci>
+                <ci> x </ci>
+              </apply>
+            </apply>
+            <ci> c </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="R1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="S1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> _rateLaw1 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

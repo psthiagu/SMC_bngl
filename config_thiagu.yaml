@@ -8,6 +8,7 @@ estimation_options:
   est_parms: ["CL","Q", "k_tc4_log", "k_tc8_log", "k_Leuk_log", "kf", "nb", "k4_act", "k8_act", "k4_kill", "k8_kill", "k4_tox", 
                "k8_tox", "kr", "k_adh", "k_migrate_B", "k_migrate_BM", "kf_ifng", "kr_ifng", "kf_il2", "kr_il2", "kf_il6", "kr_il6", "kf_il10", "kr_il10"]
   observables: ['time', 'Leuk_BM', 'Leuk_B', 'IL2_B', 'Tc8_B', 'Tc4_B', 'IFNg_B', 'Tc8_BM', 'IL10_B', 'A_B', 'Tc4_BM', 'IL6_B']
+  sample_percent: 0.05
 simulation_options:
   # type: "from_python"
   # function: "my_sim.simulate"

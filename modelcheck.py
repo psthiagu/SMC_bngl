@@ -25,11 +25,16 @@ class ModelChecker:
             formulas = self.formulas
 
         dic_poisson = {}
-        T = res['time'].tolist()
+        # T = res['time'].tolist()
+        # import IPython;IPython.embed()
+        T = res[:,0]['time'].tolist()
         for f in formulas:
             ob = f[2]
-            t = f[1]/24
-            obs_res = res[ob] #.tolist()
+            # t = f[1]/24
+            t = f[1]
+            idx = list(res.dtype.names).index(ob)
+            # obs_res = res[ob] #.tolist()
+            obs_res = res[:,idx][ob] #.tolist()
             if t in T:
                 i = T.index(t)
                 if (f[3] - f[3]*f[4] <= obs_res[i]) and (obs_res[i] <= f[3] + f[3]*f[4]):

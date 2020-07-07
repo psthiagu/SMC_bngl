@@ -1,0 +1,19 @@
+data_options:
+  data_path: "data_poly"
+  w: 0.1
+files:
+  xml_file: "polynomial.xml"
+  bngl_file: "polynomial.bngl"
+estimation_options:
+  est_parms: ["a", "b", "c", "d", "e", "f", "g"]
+  observables: ["x", "y1", "y2"]
+  sample_percent: 0.05
+simulation_options:
+  type: "from_python"
+  function: "my_sim.simulate"
+  # type: "librr_sim" # options: from_bngl and from_python
+  start: 0
+  end: 10
+  num: 1000
+
+# simulate({method=>"ode",t_start=>0,t_end=>10,n_steps=>1000,suffix=>"wt",print_functions=>1})

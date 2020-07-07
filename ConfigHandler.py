@@ -30,6 +30,7 @@ class ConfigHandler:
         if est_dict is not None:
             self.est_parms = est_dict.get("est_parms", None)
             self.obs_list = est_dict.get("observables", None)
+            self.sample_perc = float(est_dict.get("sample_percent", 0.05))
         else:
             # TODO: Error out nicely or add logical defaults
             print("We need estimation options to be set")
@@ -109,13 +110,13 @@ class ConfigHandler:
                 # solution: pre-allocate an array first, then run the simulations
                 ctr = 0
                 for stage in sorted(stages):
-                    print("Running stage {}".format(stage))
+                    # print("Running stage {}".format(stage))
                     stage_dict = stages[stage]
                     param_sets = stage_dict.get("params",None)
                     if param_sets:
                         # set parameters
                         for param in param_sets:
-                            print("setting paramter {} to {}".format(param, param_sets[param]))
+                            # print("setting paramter {} to {}".format(param, param_sets[param]))
                             setattr(obj.simulator, param, param_sets[param])
                     num = stage_dict.get("num", 100) + 1
                     if stage_dict.get("start",None) is None:
@@ -127,7 +128,7 @@ class ConfigHandler:
                         start = stage_dict.get("start", 0)
                         end = stage_dict.get("end", 100)
                     start, end, num = self.eval_if_string(start, end, num)
-                    print("simulating start {}, end {}, num pts {}".format(start, end, num))
+                    # print("simulating start {}, end {}, num pts {}".format(start, end, num))
                     if ctr > 0:
                         new_res = obj.simulator.simulate(start, end, num)
                         stacked = np.vstack([result, new_res[1:]])

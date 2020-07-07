@@ -1,0 +1,24 @@
+# Created by BioNetGen 2.5.0
+begin parameters
+    1 a          0.3  # Constant
+    2 b          1  # Constant
+    3 c          27  # Constant
+    4 d          70  # Constant
+    5 e          21  # Constant
+    6 f          5  # Constant
+    7 g          0.8  # Constant
+    8 _rateLaw1  1  # Constant
+end parameters
+begin functions
+    1 y1() ((((a*(x^4))-(b*(x^3)))+(c*(x^2)))-(d*x))+e
+    2 y2() ((((g*(x^4))-(f*(x^3)))+(e*(x^2)))-(d*x))+c
+end functions
+begin species
+    1 counter() 0
+end species
+begin reactions
+    1 0 1 _rateLaw1 #_R1
+end reactions
+begin groups
+    1 x                    1
+end groups

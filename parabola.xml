@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by BioNetGen 2.5.0  -->
+<sbml xmlns="http://www.sbml.org/sbml/level2/version3" level="2" version="3">
+  <model id="parabola">
+    <listOfCompartments>
+      <compartment id="cell" size="1"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S1" compartment="cell" initialConcentration="-10" name="counter()"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <!-- Independent variables -->
+      <parameter id="v1" value="0.5"/>
+      <parameter id="v2" value="1"/>
+      <parameter id="v3" value="3"/>
+      <parameter id="_rateLaw1" value="1"/>
+      <!-- Observables -->
+      <parameter id="x" constant="false"/>
+      <!-- Global functions -->
+      <parameter id="y" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <!-- Observables -->
+      <assignmentRule variable="x">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <plus/>
+              <cn> 0 </cn>
+              <ci> S1 </ci>
+            </apply>
+          </math>
+      </assignmentRule>
+      <!-- Global functions -->
+      <assignmentRule variable="y">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <plus/>
+              <apply>
+                <times/>
+                <ci> v1 </ci>
+                <apply>
+                  <power/>
+                  <ci> x </ci>
+                  <cn> 2 </cn>
+                </apply>
+              </apply>
+              <apply>
+                <times/>
+                <ci> v2 </ci>
+                <ci> x </ci>
+              </apply>
+            </apply>
+            <ci> v3 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="R1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="S1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> _rateLaw1 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

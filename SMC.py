@@ -8,6 +8,7 @@ Created on Tue Mar 3 11:37:30 2020
 
 import yaml, sys, argparse
 import training2formula as t2f  
+import numpy as np
 from simulate import SMCSimulator
 from ConfigHandler import ConfigHandler
 from modelcheck import ModelChecker
@@ -36,14 +37,8 @@ class SMC:
         self.formulas, self.dic_formulas = self.t2form.run()
         self.Simulator = SMCSimulator(self.dic_formulas, handler=self.configHandler)
         self.MC = ModelChecker(self.formulas)
-        # determine hypothesis parameters
-        alpha = 0.1
-        alpha = float(alpha)/float(n)
-        prob=0.9
-        beta=0.1
-        delta=0.05
-        # the tester
-        ht = HypothesisTester(prob, alpha, beta, delta)
+        self.fail_rates = []
+        self.call_counts = [] 
 
     def _parse_args(self):
         '''
@@ -66,15 +61,28 @@ class SMC:
         return mc_res_prune
 
 
-    def run(self):
+    def run(self, values):
         # Note, self.configHandler has all the estimation stuff 
         # that was given in the YAML file.
-        res = self.Simulator.get_new_trajectory()
+        # print("#############################")
+        print("values: {}".format(values))
+        self.Simulator.reset_simulator()
+        self.Simulator.set_curr_params(values)
+        orig_res, fail_rate = self.Simulator.get_new_trajectory()
+        self.fail_rates.append(fail_rate)
         # Now we need to check the results
-        check = self.MC.modelcheck(res)
+        check = self.MC.modelcheck(orig_res)
         # need to remove some unnecessary keys
         mc_res = self.prune_result(check)
         n = len(mc_res)
+        # determine hypothesis parameters
+        alpha = 0.1
+        alpha = float(alpha)/float(n)
+        prob=0.9
+        beta=0.1
+        delta=0.05
+        # the tester
+        ht = HypothesisTester(prob, alpha, beta, delta)
         current = list(mc_res.keys())
         Samples = {}
         NH = []
@@ -82,10 +90,12 @@ class SMC:
         for v in current:
             Samples[v] = []
         
-        print("#############################")
+        ctr = 0 
+        # print("#############################")
         while len(current) > 0:
-            print("Currently there are {} things left".format(len(current)))
-            res = self.Simulator.get_new_trajectory()
+            ctr += 1
+            res, fail_rate = self.Simulator.get_new_trajectory()
+            self.fail_rates.append(fail_rate)
             check = self.MC.modelcheck(res)
             mc_res = self.prune_result(check)
             for v in current:
@@ -97,15 +107,23 @@ class SMC:
                 elif test_res == 1:
                     AH.append(v)
                     current.remove(v)
-            print("Current null hyp: {}".format(NH))
-            print("Current alt hyp: {}".format(AH))
-            print("left over formulas: {}".format(current))
-            print("#############################")
+            # print("Current null hyp: {}".format(NH))
+            # print("Current alt hyp: {}".format(AH))
+            # print("left over formulas: {}".format(current))
+            # print("#############################")
         J = float(len(NH))/float(n)
         # We need to determine what to do given NH/AH/J 
-        return NH, AH, J
+        print("Values: {}".format(values))
+        print("Result NH: {}, AH: {}, J: {}, fitness: {}".format(NH, AH, J, (1.0-J)))
+        curr_fail_rates = np.array(self.fail_rates)
+        print("current fail rate mean: {} std: {}, len: {}".format(curr_fail_rates.mean(), curr_fail_rates.std(), len(curr_fail_rates)))
+        self.call_counts.append(ctr)
+        curr_call_cts = np.array(self.call_counts)
+        print("call count: {}, mean: {}, std: {}".format(ctr, curr_call_cts.mean(), curr_call_cts.std()))
+        return orig_res, NH, AH, J
 
 if __name__ == '__main__':
     S = SMC(cmdline=True)
-    NH, AH, J = S.run()
-    #print(mc_res)
+    vals = dict([(S.configHandler.est_parms[i], getattr(S.Simulator.simulator, S.configHandler.est_parms[i])) for i in range(len(S.configHandler.est_parms))])
+    NH, AH, J = S.run(vals)
+    print(NH, AH, J)

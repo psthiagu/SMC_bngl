@@ -1,0 +1,19 @@
+# Created by BioNetGen 2.5.0
+begin parameters
+    1 v1         0.5  # Constant
+    2 v2         1  # Constant
+    3 v3         3  # Constant
+    4 _rateLaw1  1  # Constant
+end parameters
+begin functions
+    1 y() ((v1*(x^2))+(v2*x))+v3
+end functions
+begin species
+    1 counter() -10
+end species
+begin reactions
+    1 0 1 _rateLaw1 #_R1
+end reactions
+begin groups
+    1 x                    1
+end groups

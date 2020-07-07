@@ -9,9 +9,12 @@ import argparse, glob, os, pickle
 import roadrunner
 import training2formula as t2f  
 import numpy as np
+import random
 from os import path
 from libsbml import *
 from ConfigHandler import ConfigHandler
+
+roadrunner.Logger.disableLogging()
 
 class SMCSimulator:
     def __init__(self, dic_formulas, config_file=None, handler=None):
@@ -135,7 +138,7 @@ class SMCSimulator:
         
         """
         
-        doc = readSBMLFromFile("comp31_sbml.xml")
+        doc = readSBMLFromFile(self.configHandler.xml_file)
         model = doc.getModel()
         S = model.species
         set_N = self.extract_basic_species_names(bngl_file)
@@ -246,10 +249,13 @@ class SMCSimulator:
     def simulate(self):
         res = self._simulate()
         if hasattr(self, "conv_obs_list"):
-            if len(res.dtype.names) == len(self.conv_obs_list):
+            if hasattr(res, "colnames"):
+                l = len(res.colnames)
+            else:
+                l = len(res.dtype.names)
+            if  l == len(self.conv_obs_list):
                 new_dtype = [(i,"float64") for i in self.rev_obs_list]
                 res = np.array(res, dtype=new_dtype)
-                # res.colnames = self.rev_obs_list
         return res
 
     def sample_vals(self, per):
@@ -257,16 +263,20 @@ class SMCSimulator:
         new_vals = {}
         for fid,init_id in self.init_ids:
             init_val = self.simulator[init_id]
-            delta = init_val * per # 5% of the initial value
-            val_sample = np.random.uniform(init_val-delta, high=init_val+delta)
+            sigma = init_val * per # % of the initial value
+            val_sample = max(0, random.gauss(init_val, sigma))
             new_vals[fid] = val_sample # adding new value to dictionary
         # parameter values
         for param in self.est_parms:
             pval = self.simulator[param]
-            delta = pval * 0.05 # 5% of the current parameter value
-            val_sample = np.random.uniform(pval-delta, high=pval+delta)
+            sigma = pval * per # % of the current parameter value
+            # don't go below 0
+            val_sample = max(0, random.gauss(pval, sigma))
             new_vals[param] = val_sample
         return new_vals
+
+    def set_curr_params(self, params):
+        self.curr_params = params
 
     def set_values(self, values):
         for name in values:
@@ -280,28 +290,36 @@ class SMCSimulator:
             raise NotImplemented
 
     def get_new_trajectory(self):
-        if self.simulated:
-            # we first reset to the initial state
-            self.reset_simulator()
-            # sample new values
-            per = 0.05 # %5 
+        # sample new values
+        # print("first call to get_new_trajectory")
+        res = None
+        fail = 0
+        ctr = 0
+        while res is None:
+            # print(ctr)
+            self.simulator.resetAll()
+            self.set_values(self.curr_params)
+            per = self.configHandler.sample_perc
             new_vals = self.sample_vals(per)
             # set the values 
-            self.set_values(values=new_vals)
-            getting_results = True
-            ctr = 0
-            while getting_results:
-                try:
-                    res = self.simulate()
-                    getting_results = False
-                except:
-                    ctr += 1
-                if ctr == 10:
-                    print("tried resampling 10 times and the simulator doesn't work")
-        else:
-            res = self.simulate()
-            self.simulated = True
-        return res
+            self.set_values(new_vals)
+            # try to simulate
+            # import IPython;IPython.embed()
+            try:
+                res = self.simulate()
+                ctr += 1
+            except:
+                fail += 1
+                ctr += 1
+                # print("failed a sim in get_new_trajectory, still trying")
+                continue
+            # if we tried more than 10 times, check
+            # if ctr == 10:
+            #     print("sim failed more than 10 times")
+            #     import IPython; IPython.embed()
+        # print("get_new_trajectory failed {} times before succeeding".format(fail))
+        fail_rate = fail/float(fail+1)
+        return res, fail_rate
     
 if __name__ == '__main__':
     t = t2f.Train2Form(fpath="data",w=0.1)

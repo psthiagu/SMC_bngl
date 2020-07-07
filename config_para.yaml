@@ -1,0 +1,19 @@
+data_options:
+  data_path: "para.csv"
+  w: 0.1
+files:
+  xml_file: "parabola.xml"
+  bngl_file: "parabola.bngl"
+estimation_options:
+  est_parms: ["v1","v2","v3"]
+  observables: ["x", "y1", "y2"]
+  sample_percent: 0.05
+simulation_options:
+  type: "from_python"
+  function: "my_sim.simulate_para"
+  # type: "librr_sim" # options: from_bngl and from_python
+  start: 0
+  end: 20
+  num: 20
+
+# simulate({method=>"ode",t_start=>0,t_end=>10,n_steps=>1000,suffix=>"wt",print_functions=>1})
